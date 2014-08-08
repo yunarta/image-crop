@@ -22,10 +22,10 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
-import com.android.gallery3d.exif.ExifInterface;
-import com.android.gallery3d.exif.ExifTag;
 import com.mobilesolutionworks.android.cropimage.camera.BitmapManager;
 import com.mobilesolutionworks.android.cropimage.camera.Util;
+import com.mobilesolutionworks.grepcode.gallery3d.exif.ExifInterface;
+import com.mobilesolutionworks.grepcode.gallery3d.exif.ExifTag;
 
 import java.io.File;
 import java.io.FileNotFoundException;
