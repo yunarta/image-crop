@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         minSdkVersion 10
-        targetSdkVersion 19
+        targetSdkVersion 20
         versionCode 1
         versionName "1.0"
     }
@@ -23,6 +23,6 @@ android {
 }
 
 dependencies {
-    compile project(":works-util")
+    compile 'com.mobilesolutionworks:works-util:1.0.3'
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
