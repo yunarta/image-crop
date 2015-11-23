@@ -5,24 +5,32 @@ repositories {
 }
 
 android {
-    compileSdkVersion Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
-    buildToolsVersion project.ANDROID_BUILD_TOOLS_VERSION
+    compileSdkVersion 21
+    buildToolsVersion "21.1.0"
+
+    def androidTargetSdkVersion = compileSdkVersion
+
+    if (project.hasProperty('androidConfiguration')) {
+        compileSdkVersion Integer.parseInt(project.androidCompileSdkVersion)
+        buildToolsVersion project.androidBuildToolsVersion
+        androidTargetSdkVersion = project.androidTargetSdkVersion
+    }
 
     defaultConfig {
         minSdkVersion 10
-        targetSdkVersion 19
+        targetSdkVersion androidTargetSdkVersion
         versionCode 1
         versionName "1.0"
     }
     buildTypes {
         release {
-            runProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+//            runProguard false
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
 }
 
 dependencies {
-    compile project(":works-util")
+    compile 'com.mobilesolutionworks:works-util:1.+'
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
