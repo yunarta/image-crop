@@ -1,36 +1,28 @@
 apply plugin: 'com.android.library'
 
-repositories {
-        mavenCentral()
-}
+group 'com.mobilesolutionworks'
+version '1.0'
+
+apply from: ('https://raw.githubusercontent.com/yunarta/works-gradle-script/master/auto-configure.gradle')
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.0"
-
-    def androidTargetSdkVersion = compileSdkVersion
-
-    if (project.hasProperty('androidConfiguration')) {
-        compileSdkVersion Integer.parseInt(project.androidCompileSdkVersion)
-        buildToolsVersion project.androidBuildToolsVersion
-        androidTargetSdkVersion = project.androidTargetSdkVersion
-    }
+    compileSdkVersion autoCompileSdkVersion(23)
+    buildToolsVersion autoBuildToolsVersion('23.0.2')
 
     defaultConfig {
-        minSdkVersion 10
-        targetSdkVersion androidTargetSdkVersion
+        minSdkVersion 14
+        targetSdkVersion autoCompileSdkVersion(22)
+
         versionCode 1
-        versionName "1.0"
+        versionName version
     }
     buildTypes {
         release {
-//            runProguard false
-//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
 }
 
 dependencies {
-    compile 'com.mobilesolutionworks:works-util:1.+'
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.mobilesolutionworks:works-exif:1.0.0'
 }
