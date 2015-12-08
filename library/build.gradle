@@ -16,6 +16,14 @@ android {
         versionCode 1
         versionName version
     }
+
+    sourceSets {
+        main {
+            java.srcDirs += ['src/cropkit/java']
+            res.srcDirs += ['src/cropkit/res']
+        }
+    }
+
     buildTypes {
         release {
         }
