@@ -24,7 +24,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
+import android.graphics.drawable.LayerDrawable;
 import android.view.View;
 
 import com.mobilesolutionworks.android.cropimage.R;
@@ -37,7 +37,7 @@ class HighlightView
 {
     View mContext;  // The View displaying the image.
 
-    private Bundle metaData;
+    private LayerDrawable metaData;
 
     public static final int GROW_NONE        = (1 << 0);
     public static final int GROW_LEFT_EDGE   = (1 << 1);
@@ -48,7 +48,7 @@ class HighlightView
 
     private int mInset;
 
-    public HighlightView(View ctx, Bundle metaData)
+    public HighlightView(View ctx, LayerDrawable metaData)
     {
         mContext = ctx;
         this.metaData = metaData;
@@ -58,9 +58,9 @@ class HighlightView
     {
         android.content.res.Resources resources = mContext.getResources();
 
-        mResizeDrawableWidth = resources.getDrawable(metaData.getInt("imagecrop_horizontal", R.drawable.z_imagecrop_horizontal));
-        mResizeDrawableHeight = resources.getDrawable(metaData.getInt("imagecrop_vertical", R.drawable.z_imagecrop_horizontal));
-        mResizeDrawableDiagonal = resources.getDrawable(metaData.getInt("imagecrop_diagonal", R.drawable.z_imagecrop_diagonal));
+        mResizeDrawableWidth = metaData.getDrawable(R.id.cropkit_highlight_horizontal);
+        mResizeDrawableHeight = metaData.getDrawable(R.id.cropkit_highlight_vertical);
+        mResizeDrawableDiagonal = metaData.getDrawable(R.id.cropkit_highlight_diagonal);
 
 //        DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
 //        (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, metrics);
