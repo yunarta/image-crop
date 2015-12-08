@@ -19,7 +19,7 @@ package com.mobilesolutionworks.android.cropimage.camera.gallery;
 import android.net.Uri;
 
 import com.mobilesolutionworks.android.cropimage.camera.ImageManager;
-import com.mobilesolutionworks.android.cropimage.camera.Util;
+import com.mobilesolutionworks.android.cropkit.Util;
 
 import java.util.Arrays;
 import java.util.Comparator;

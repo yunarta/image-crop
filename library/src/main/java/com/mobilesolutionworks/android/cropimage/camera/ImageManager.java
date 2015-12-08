@@ -39,6 +39,7 @@ import com.mobilesolutionworks.android.cropimage.camera.gallery.ImageListUber;
 import com.mobilesolutionworks.android.cropimage.camera.gallery.SingleImageList;
 import com.mobilesolutionworks.android.cropimage.camera.gallery.VideoList;
 import com.mobilesolutionworks.android.cropimage.camera.gallery.VideoObject;
+import com.mobilesolutionworks.android.cropkit.Util;
 
 import java.io.File;
 import java.io.FileNotFoundException;

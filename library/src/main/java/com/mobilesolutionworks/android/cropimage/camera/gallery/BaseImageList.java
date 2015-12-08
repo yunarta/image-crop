@@ -23,7 +23,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.mobilesolutionworks.android.cropimage.camera.ImageManager;
-import com.mobilesolutionworks.android.cropimage.camera.Util;
+import com.mobilesolutionworks.android.cropkit.Util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

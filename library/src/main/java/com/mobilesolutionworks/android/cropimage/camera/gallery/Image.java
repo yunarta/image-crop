@@ -28,7 +28,7 @@ import android.provider.MediaStore.Images.ImageColumns;
 import android.util.Log;
 
 import com.mobilesolutionworks.android.cropimage.camera.BitmapManager;
-import com.mobilesolutionworks.android.cropimage.camera.Util;
+import com.mobilesolutionworks.android.cropkit.Util;
 
 import java.io.IOException;
 

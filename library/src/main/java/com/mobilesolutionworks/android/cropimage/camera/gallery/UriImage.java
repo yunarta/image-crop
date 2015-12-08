@@ -24,7 +24,7 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import com.mobilesolutionworks.android.cropimage.camera.BitmapManager;
-import com.mobilesolutionworks.android.cropimage.camera.Util;
+import com.mobilesolutionworks.android.cropkit.Util;
 import com.mobilesolutionworks.android.graphics.exif.ExifInterface;
 import com.mobilesolutionworks.android.graphics.exif.ExifTag;
 

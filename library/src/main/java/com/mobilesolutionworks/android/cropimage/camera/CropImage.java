@@ -44,6 +44,7 @@ import android.widget.Toast;
 import com.mobilesolutionworks.android.cropimage.R;
 import com.mobilesolutionworks.android.cropimage.camera.gallery.IImage;
 import com.mobilesolutionworks.android.cropimage.camera.gallery.IImageList;
+import com.mobilesolutionworks.android.cropkit.Util;
 
 import java.io.File;
 import java.io.IOException;

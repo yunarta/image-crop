@@ -25,7 +25,7 @@ import android.provider.MediaStore.Images;
 import android.util.Log;
 
 import com.mobilesolutionworks.android.cropimage.camera.BitmapManager;
-import com.mobilesolutionworks.android.cropimage.camera.Util;
+import com.mobilesolutionworks.android.cropkit.Util;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
