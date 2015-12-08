@@ -1,11 +1,15 @@
 package com.mobilesolutionworks.android.cropimage.camera;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
+import com.mobilesolutionworks.android.cropimage.R;
 import com.mobilesolutionworks.android.cropkit.ImageViewTouchBase;
 
 import java.util.ArrayList;
@@ -19,6 +23,8 @@ public class CropImageView extends ImageViewTouchBase
     HighlightView            mMotionHighlightView = null;
     float mLastX, mLastY;
     int mMotionEdge;
+
+    final LayerDrawable mHighlight;
 
     @Override
     protected void onLayout(boolean changed, int left, int top,
@@ -42,6 +48,24 @@ public class CropImageView extends ImageViewTouchBase
     public CropImageView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
+
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CropImageView, R.attr.cropKitStyle, R.style.CropKit);
+
+        Drawable dHighlight = a.getDrawable(R.styleable.CropImageView_cropKitHighlight);
+        if (!(dHighlight instanceof LayerDrawable)) throw new IllegalStateException("cropKitHightlight must be a layer-list");
+
+        mHighlight = (LayerDrawable) dHighlight;
+        int[] idCheck = {R.id.cropkit_highlight_diagonal, R.id.cropkit_highlight_horizontal, R.id.cropkit_highlight_vertical};
+
+        for (int id : idCheck)
+        {
+            if (mHighlight.findDrawableByLayerId(id) == null)
+            {
+                throw new IllegalStateException("@id/" + getResources().getResourceEntryName(id) + " is not included in cropKitHightlight layer-list");
+            }
+        }
+
+        a.recycle();
     }
 
     @Override
