@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="cropkit_highlight_horizontal" type="id"/>
+    <item name="cropkit_highlight_vertical" type="id"/>
+    <item name="cropkit_highlight_diagonal" type="id"/>
+
+    <attr name="cropKitStyle" format="reference"/>
+
+    <declare-styleable name="CropImageView">
+        <attr name="cropKitHighlight" format="reference"/>
+    </declare-styleable>
+</resources>
