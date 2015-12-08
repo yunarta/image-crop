@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mobilesolutionworks.android.cropimage.camera;
+package com.mobilesolutionworks.android.cropkit;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -26,7 +26,9 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.widget.ImageView;
 
-abstract class ImageViewTouchBase extends ImageView
+import com.mobilesolutionworks.android.cropimage.camera.RotateBitmap;
+
+public abstract class ImageViewTouchBase extends ImageView
 {
 
     @SuppressWarnings("unused")
@@ -208,7 +210,7 @@ abstract class ImageViewTouchBase extends ImageView
     // view's dimensions then center it (literally).  If the image
     // is scaled larger than the view and is translated out of view
     // then translate it back into view (i.e. eliminate black bars).
-    protected void center(boolean horizontal, boolean vertical)
+    public void center(boolean horizontal, boolean vertical)
     {
         if (mBitmapDisplayed.getBitmap() == null)
         {
@@ -295,7 +297,7 @@ abstract class ImageViewTouchBase extends ImageView
         return getValue(matrix, Matrix.MSCALE_X);
     }
 
-    protected float getScale()
+    public float getScale()
     {
         return getScale(mSuppMatrix);
     }
