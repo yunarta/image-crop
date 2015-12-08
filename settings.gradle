@@ -1,1 +1,5 @@
-include ':sample', ':library'
+include ':sample'
+project(':sample').projectDir = new File('sample')
+
+include ':works-cropkit'
+project(':works-cropkit').projectDir = new File('library')
