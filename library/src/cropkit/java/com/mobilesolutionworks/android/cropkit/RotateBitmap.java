@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.mobilesolutionworks.android.cropimage.camera;
+package com.mobilesolutionworks.android.cropkit;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 
 public class RotateBitmap
 {
-    public static final String TAG = "RotateBitmap";
     private Bitmap mBitmap;
-    private int    mRotation;
+
+    private int mRotation;
 
     public RotateBitmap(Bitmap bitmap)
     {

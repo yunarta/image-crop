@@ -26,8 +26,6 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.widget.ImageView;
 
-import com.mobilesolutionworks.android.cropimage.camera.RotateBitmap;
-
 public abstract class ImageViewTouchBase extends ImageView
 {
 
@@ -68,7 +66,7 @@ public abstract class ImageViewTouchBase extends ImageView
     // its use of that Bitmap.
     public interface Recycler
     {
-        public void recycle(Bitmap b);
+        void recycle(Bitmap b);
     }
 
     public void setRecycler(Recycler r)
@@ -351,8 +349,7 @@ public abstract class ImageViewTouchBase extends ImageView
 
         float fw  = (float) mBitmapDisplayed.getWidth() / (float) mThisWidth;
         float fh  = (float) mBitmapDisplayed.getHeight() / (float) mThisHeight;
-        float max = Math.max(fw, fh) * 4;
-        return max;
+        return Math.max(fw, fh) * 4;
     }
 
     protected void zoomTo(float scale, float centerX, float centerY)
