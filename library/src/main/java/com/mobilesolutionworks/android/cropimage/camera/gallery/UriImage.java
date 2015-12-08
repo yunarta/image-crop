@@ -33,65 +33,89 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-class UriImage implements IImage {
+class UriImage implements IImage
+{
     private static final String TAG = "UriImage";
-    private final Uri mUri;
-    private final IImageList mContainer;
+    private final Uri             mUri;
+    private final IImageList      mContainer;
     private final ContentResolver mContentResolver;
-    private int mRotation;
+    private       int             mRotation;
 
-    UriImage(IImageList container, ContentResolver cr, Uri uri) {
+    UriImage(IImageList container, ContentResolver cr, Uri uri)
+    {
         mContainer = container;
         mContentResolver = cr;
         mUri = uri;
     }
 
-    public int getDegreesRotated() {
+    public int getDegreesRotated()
+    {
         return 0;
     }
 
-    public String getDataPath() {
+    public String getDataPath()
+    {
         return mUri.getPath();
     }
 
-    private InputStream getInputStream() {
-        try {
-            if (mUri.getScheme().equals("file")) {
+    private InputStream getInputStream()
+    {
+        try
+        {
+            if (mUri.getScheme().equals("file"))
+            {
                 return new java.io.FileInputStream(mUri.getPath());
-            } else {
+            }
+            else
+            {
                 return mContentResolver.openInputStream(mUri);
             }
-        } catch (FileNotFoundException ex) {
+        }
+        catch (FileNotFoundException ex)
+        {
             return null;
         }
     }
 
-    private ParcelFileDescriptor getPFD() {
-        try {
+    private ParcelFileDescriptor getPFD()
+    {
+        try
+        {
             InputStream in = mContentResolver.openInputStream(mUri);
-            try {
+            try
+            {
                 ExifInterface exifInterface = new ExifInterface();
                 exifInterface.readExif(in);
 
-                ExifTag tag = exifInterface.getTag(ExifInterface.TAG_ORIENTATION);
-                int valueAsInt = tag.getValueAsInt(0);
+                ExifTag tag        = exifInterface.getTag(ExifInterface.TAG_ORIENTATION);
+                int     valueAsInt = tag.getValueAsInt(0);
 
                 mRotation = ExifInterface.getRotationForOrientationValue((short) valueAsInt);
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 mRotation = 0;
-            } finally {
-                try {
+            }
+            finally
+            {
+                try
+                {
                     in.close();
-                } catch (IOException e) {
+                }
+                catch (IOException e)
+                {
                     e.printStackTrace();
                 }
             }
 
-            if (mUri.getScheme().equals("file")) {
+            if (mUri.getScheme().equals("file"))
+            {
                 String path = mUri.getPath();
                 return ParcelFileDescriptor.open(new File(path),
                         ParcelFileDescriptor.MODE_READ_ONLY);
-            } else {
+            }
+            else
+            {
 //                Cursor cursor = mContentResolver.query(mUri, null, null, null, null);
 //                if (Arrays.asList(cursor.getColumnNames()).indexOf("mime_type") != -1) {
 //                    cursor.moveToNext();
@@ -139,107 +163,133 @@ class UriImage implements IImage {
 
                 return mContentResolver.openFileDescriptor(mUri, "r");
             }
-        } catch (FileNotFoundException ex) {
+        }
+        catch (FileNotFoundException ex)
+        {
             return null;
         }
     }
 
-    public Bitmap fullSizeBitmap(int minSideLength, int maxNumberOfPixels) {
+    public Bitmap fullSizeBitmap(int minSideLength, int maxNumberOfPixels)
+    {
         return fullSizeBitmap(minSideLength, maxNumberOfPixels,
                 IImage.ROTATE_AS_NEEDED, IImage.NO_NATIVE);
     }
 
     public Bitmap fullSizeBitmap(int minSideLength, int maxNumberOfPixels,
-                                 boolean rotateAsNeeded) {
+                                 boolean rotateAsNeeded)
+    {
         return fullSizeBitmap(minSideLength, maxNumberOfPixels,
                 rotateAsNeeded, IImage.NO_NATIVE);
     }
 
     public Bitmap fullSizeBitmap(int minSideLength, int maxNumberOfPixels,
-                                 boolean rotateAsNeeded, boolean useNative) {
-        try {
+                                 boolean rotateAsNeeded, boolean useNative)
+    {
+        try
+        {
             ParcelFileDescriptor pfdInput = getPFD();
             Bitmap b = Util.makeBitmap(minSideLength, maxNumberOfPixels,
                     pfdInput, useNative);
-            if (mRotation != 0) {
+            if (mRotation != 0)
+            {
                 b = Util.rotate(b, mRotation);
             }
             return b;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             Log.e(TAG, "got exception decoding bitmap ", ex);
             return null;
         }
     }
 
-    public Uri fullSizeImageUri() {
+    public Uri fullSizeImageUri()
+    {
         return mUri;
     }
 
-    public InputStream fullSizeImageData() {
+    public InputStream fullSizeImageData()
+    {
         return getInputStream();
     }
 
-    public Bitmap miniThumbBitmap() {
+    public Bitmap miniThumbBitmap()
+    {
         return thumbBitmap(IImage.ROTATE_AS_NEEDED);
     }
 
-    public String getTitle() {
+    public String getTitle()
+    {
         return mUri.toString();
     }
 
-    public Bitmap thumbBitmap(boolean rotateAsNeeded) {
+    public Bitmap thumbBitmap(boolean rotateAsNeeded)
+    {
         return fullSizeBitmap(THUMBNAIL_TARGET_SIZE, THUMBNAIL_MAX_NUM_PIXELS,
                 rotateAsNeeded);
     }
 
-    private BitmapFactory.Options snifBitmapOptions() {
+    private BitmapFactory.Options snifBitmapOptions()
+    {
         ParcelFileDescriptor input = getPFD();
         if (input == null) return null;
-        try {
+        try
+        {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
             BitmapManager.instance().decodeFileDescriptor(
                     input.getFileDescriptor(), options);
             return options;
-        } finally {
+        }
+        finally
+        {
             Util.closeSilently(input);
         }
     }
 
-    public String getMimeType() {
+    public String getMimeType()
+    {
         BitmapFactory.Options options = snifBitmapOptions();
         return (options != null && options.outMimeType != null)
                 ? options.outMimeType
                 : "";
     }
 
-    public int getHeight() {
+    public int getHeight()
+    {
         BitmapFactory.Options options = snifBitmapOptions();
         return (options != null) ? options.outHeight : 0;
     }
 
-    public int getWidth() {
+    public int getWidth()
+    {
         BitmapFactory.Options options = snifBitmapOptions();
         return (options != null) ? options.outWidth : 0;
     }
 
-    public IImageList getContainer() {
+    public IImageList getContainer()
+    {
         return mContainer;
     }
 
-    public long getDateTaken() {
+    public long getDateTaken()
+    {
         return 0;
     }
 
-    public boolean isReadonly() {
+    public boolean isReadonly()
+    {
         return true;
     }
 
-    public boolean isDrm() {
+    public boolean isDrm()
+    {
         return false;
     }
 
-    public boolean rotateImageBy(int degrees) {
+    public boolean rotateImageBy(int degrees)
+    {
         return false;
     }
 }

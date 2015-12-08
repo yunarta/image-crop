@@ -18,9 +18,11 @@ package com.mobilesolutionworks.android.cropimage.camera;
 
 import android.app.Activity;
 
-public class NoSearchActivity extends Activity {
+public class NoSearchActivity extends Activity
+{
     @Override
-    public boolean onSearchRequested() {
+    public boolean onSearchRequested()
+    {
         return false;
     }
 }

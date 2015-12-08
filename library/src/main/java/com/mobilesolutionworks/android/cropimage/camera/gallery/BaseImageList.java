@@ -16,14 +16,14 @@
 
 package com.mobilesolutionworks.android.cropimage.camera.gallery;
 
-import com.mobilesolutionworks.android.cropimage.camera.ImageManager;
-import com.mobilesolutionworks.android.cropimage.camera.Util;
-
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
+
+import com.mobilesolutionworks.android.cropimage.camera.ImageManager;
+import com.mobilesolutionworks.android.cropimage.camera.Util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,29 +31,32 @@ import java.util.regex.Pattern;
 /**
  * A collection of <code>BaseImage</code>s.
  */
-public abstract class BaseImageList implements IImageList {
-    private static final String TAG = "BaseImageList";
-    private static final int CACHE_CAPACITY = 512;
-    private final LruCache<Integer, BaseImage> mCache =
+public abstract class BaseImageList implements IImageList
+{
+    private static final String                       TAG            = "BaseImageList";
+    private static final int                          CACHE_CAPACITY = 512;
+    private final        LruCache<Integer, BaseImage> mCache         =
             new LruCache<Integer, BaseImage>(CACHE_CAPACITY);
 
     protected ContentResolver mContentResolver;
-    protected int mSort;
+    protected int             mSort;
 
-    protected Uri mBaseUri;
+    protected Uri    mBaseUri;
     protected Cursor mCursor;
     protected String mBucketId;
     protected boolean mCursorDeactivated = false;
 
     public BaseImageList(ContentResolver resolver, Uri uri, int sort,
-            String bucketId) {
+                         String bucketId)
+    {
         mSort = sort;
         mBaseUri = uri;
         mBucketId = bucketId;
         mContentResolver = resolver;
         mCursor = createCursor();
 
-        if (mCursor == null) {
+        if (mCursor == null)
+        {
             Log.w(TAG, "createCursor returns null.");
         }
 
@@ -63,51 +66,66 @@ public abstract class BaseImageList implements IImageList {
         mCache.clear();
     }
 
-    public void close() {
-        try {
+    public void close()
+    {
+        try
+        {
             invalidateCursor();
-        } catch (IllegalStateException e) {
+        }
+        catch (IllegalStateException e)
+        {
             // IllegalStateException may be thrown if the cursor is stale.
             Log.e(TAG, "Caught exception while deactivating cursor.", e);
         }
         mContentResolver = null;
-        if (mCursor != null) {
+        if (mCursor != null)
+        {
             mCursor.close();
             mCursor = null;
         }
     }
 
     // TODO: Change public to protected
-    public Uri contentUri(long id) {
+    public Uri contentUri(long id)
+    {
         // TODO: avoid using exception for most cases
-        try {
+        try
+        {
             // does our uri already have an id (single image query)?
             // if so just return it
             long existingId = ContentUris.parseId(mBaseUri);
             if (existingId != id) Log.e(TAG, "id mismatch");
             return mBaseUri;
-        } catch (NumberFormatException ex) {
+        }
+        catch (NumberFormatException ex)
+        {
             // otherwise tack on the id
             return ContentUris.withAppendedId(mBaseUri, id);
         }
     }
 
-    public int getCount() {
+    public int getCount()
+    {
         Cursor cursor = getCursor();
         if (cursor == null) return 0;
-        synchronized (this) {
+        synchronized (this)
+        {
             return cursor.getCount();
         }
     }
 
-    public boolean isEmpty() {
+    public boolean isEmpty()
+    {
         return getCount() == 0;
     }
 
-    private Cursor getCursor() {
-        synchronized (this) {
+    private Cursor getCursor()
+    {
+        synchronized (this)
+        {
             if (mCursor == null) return null;
-            if (mCursorDeactivated) {
+            if (mCursorDeactivated)
+            {
                 mCursor.requery();
                 mCursorDeactivated = false;
             }
@@ -115,12 +133,15 @@ public abstract class BaseImageList implements IImageList {
         }
     }
 
-    public IImage getImageAt(int i) {
+    public IImage getImageAt(int i)
+    {
         BaseImage result = mCache.get(i);
-        if (result == null) {
+        if (result == null)
+        {
             Cursor cursor = getCursor();
             if (cursor == null) return null;
-            synchronized (this) {
+            synchronized (this)
+            {
                 result = cursor.moveToPosition(i)
                         ? loadImageFromCursor(cursor)
                         : null;
@@ -130,19 +151,24 @@ public abstract class BaseImageList implements IImageList {
         return result;
     }
 
-    public boolean removeImage(IImage image) {
+    public boolean removeImage(IImage image)
+    {
         // TODO: need to delete the thumbnails as well
-        if (mContentResolver.delete(image.fullSizeImageUri(), null, null) > 0) {
+        if (mContentResolver.delete(image.fullSizeImageUri(), null, null) > 0)
+        {
             ((BaseImage) image).onRemove();
             invalidateCursor();
             invalidateCache();
             return true;
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
 
-    public boolean removeImageAt(int i) {
+    public boolean removeImageAt(int i)
+    {
         // TODO: need to delete the thumbnails as well
         return removeImage(getImageAt(i));
     }
@@ -153,25 +179,29 @@ public abstract class BaseImageList implements IImageList {
 
     protected abstract long getImageId(Cursor cursor);
 
-    protected void invalidateCursor() {
+    protected void invalidateCursor()
+    {
         if (mCursor == null) return;
         mCursor.deactivate();
         mCursorDeactivated = true;
     }
 
-    protected void invalidateCache() {
+    protected void invalidateCache()
+    {
         mCache.clear();
     }
 
     private static final Pattern sPathWithId = Pattern.compile("(.*)/\\d+");
 
-    private static String getPathWithoutId(Uri uri) {
-        String path = uri.getPath();
+    private static String getPathWithoutId(Uri uri)
+    {
+        String  path    = uri.getPath();
         Matcher matcher = sPathWithId.matcher(path);
         return matcher.matches() ? matcher.group(1) : path;
     }
 
-    private boolean isChildImageUri(Uri uri) {
+    private boolean isChildImageUri(Uri uri)
+    {
         // Sometimes, the URI of an image contains a query string with key
         // "bucketId" inorder to restore the image list. However, the query
         // string is not part of the mBaseUri. So, we check only other parts
@@ -183,25 +213,33 @@ public abstract class BaseImageList implements IImageList {
                 && Util.equals(base.getPath(), getPathWithoutId(uri));
     }
 
-    public IImage getImageForUri(Uri uri) {
+    public IImage getImageForUri(Uri uri)
+    {
         if (!isChildImageUri(uri)) return null;
         // Find the id of the input URI.
         long matchId;
-        try {
+        try
+        {
             matchId = ContentUris.parseId(uri);
-        } catch (NumberFormatException ex) {
+        }
+        catch (NumberFormatException ex)
+        {
             Log.i(TAG, "fail to get id in: " + uri, ex);
             return null;
         }
         // TODO: design a better method to get URI of specified ID
         Cursor cursor = getCursor();
         if (cursor == null) return null;
-        synchronized (this) {
+        synchronized (this)
+        {
             cursor.moveToPosition(-1); // before first
-            for (int i = 0; cursor.moveToNext(); ++i) {
-                if (getImageId(cursor) == matchId) {
+            for (int i = 0; cursor.moveToNext(); ++i)
+            {
+                if (getImageId(cursor) == matchId)
+                {
                     BaseImage image = mCache.get(i);
-                    if (image == null) {
+                    if (image == null)
+                    {
                         image = loadImageFromCursor(cursor);
                         mCache.put(i, image);
                     }
@@ -212,7 +250,8 @@ public abstract class BaseImageList implements IImageList {
         }
     }
 
-    public int getImageIndex(IImage image) {
+    public int getImageIndex(IImage image)
+    {
         return ((BaseImage) image).mIndex;
     }
 
@@ -221,19 +260,20 @@ public abstract class BaseImageList implements IImageList {
     // or descending, depending on the mSort variable.
     // The date is obtained from the "datetaken" column. But if it is null,
     // the "date_modified" column is used instead.
-    protected String sortOrder() {
+    protected String sortOrder()
+    {
         String ascending =
                 (mSort == ImageManager.SORT_ASCENDING)
-                ? " ASC"
-                : " DESC";
+                        ? " ASC"
+                        : " DESC";
 
         // Use DATE_TAKEN if it's non-null, otherwise use DATE_MODIFIED.
         // DATE_TAKEN is in milliseconds, but DATE_MODIFIED is in seconds.
         String dateExpr =
                 "case ifnull(datetaken,0)" +
-                " when 0 then date_modified*1000" +
-                " else datetaken" +
-                " end";
+                        " when 0 then date_modified*1000" +
+                        " else datetaken" +
+                        " end";
 
         // Add id to the end so that we don't ever get random sorting
         // which could happen, I suppose, if the date values are the same.

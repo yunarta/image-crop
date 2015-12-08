@@ -28,28 +28,42 @@ import java.util.WeakHashMap;
 
 /**
  * This class provides several utilities to cancel bitmap decoding.
- *
+ * <p>
  * The function decodeFileDescriptor() is used to decode a bitmap. During
  * decoding if another thread wants to cancel it, it calls the function
  * cancelThreadDecoding() specifying the Thread which is in decoding.
- *
+ * <p>
  * cancelThreadDecoding() is sticky until allowThreadDecoding() is called.
  */
-public class BitmapManager {
+public class BitmapManager
+{
     private static final String TAG = "BitmapManager";
-    private static enum State {CANCEL, ALLOW}
-    private static class ThreadStatus {
+
+    private static enum State
+    {
+        CANCEL, ALLOW
+    }
+
+    private static class ThreadStatus
+    {
         public State mState = State.ALLOW;
         public BitmapFactory.Options mOptions;
-        public boolean mThumbRequesting;
+        public boolean               mThumbRequesting;
+
         @Override
-        public String toString() {
+        public String toString()
+        {
             String s;
-            if (mState == State.CANCEL) {
+            if (mState == State.CANCEL)
+            {
                 s = "Cancel";
-            } else if (mState == State.ALLOW) {
+            }
+            else if (mState == State.ALLOW)
+            {
                 s = "Allow";
-            } else {
+            }
+            else
+            {
                 s = "?";
             }
             s = "thread state = " + s + ", options = " + mOptions;
@@ -62,15 +76,18 @@ public class BitmapManager {
 
     private static BitmapManager sManager = null;
 
-    private BitmapManager() {
+    private BitmapManager()
+    {
     }
 
     /**
      * Get thread status and create one if specified.
      */
-    private synchronized ThreadStatus getOrCreateThreadStatus(Thread t) {
+    private synchronized ThreadStatus getOrCreateThreadStatus(Thread t)
+    {
         ThreadStatus status = mThreadStatus.get(t);
-        if (status == null) {
+        if (status == null)
+        {
             status = new ThreadStatus();
             mThreadStatus.put(t, status);
         }
@@ -82,11 +99,13 @@ public class BitmapManager {
      * BitmapFaction.Options used for decoding and cancelling.
      */
     private synchronized void setDecodingOptions(Thread t,
-            BitmapFactory.Options options) {
+                                                 BitmapFactory.Options options)
+    {
         getOrCreateThreadStatus(t).mOptions = options;
     }
 
-    synchronized void removeDecodingOptions(Thread t) {
+    synchronized void removeDecodingOptions(Thread t)
+    {
         ThreadStatus status = mThreadStatus.get(t);
         status.mOptions = null;
     }
@@ -95,9 +114,11 @@ public class BitmapManager {
      * The following three methods are used to keep track of which thread
      * is being disabled for bitmap decoding.
      */
-    public synchronized boolean canThreadDecoding(Thread t) {
+    public synchronized boolean canThreadDecoding(Thread t)
+    {
         ThreadStatus status = mThreadStatus.get(t);
-        if (status == null) {
+        if (status == null)
+        {
             // allow decoding by default
             return true;
         }
@@ -106,14 +127,17 @@ public class BitmapManager {
         return result;
     }
 
-    public synchronized void allowThreadDecoding(Thread t) {
+    public synchronized void allowThreadDecoding(Thread t)
+    {
         getOrCreateThreadStatus(t).mState = State.ALLOW;
     }
 
-    public synchronized void cancelThreadDecoding(Thread t, ContentResolver cr) {
+    public synchronized void cancelThreadDecoding(Thread t, ContentResolver cr)
+    {
         ThreadStatus status = getOrCreateThreadStatus(t);
         status.mState = State.CANCEL;
-        if (status.mOptions != null) {
+        if (status.mOptions != null)
+        {
             status.mOptions.requestCancelDecode();
         }
 
@@ -122,50 +146,67 @@ public class BitmapManager {
 
         // Since our cancel request can arrive MediaProvider earlier than getThumbnail request,
         // we use mThumbRequesting flag to make sure our request does cancel the request.
-        try {
-            synchronized (status) {
-                while (status.mThumbRequesting) {
+        try
+        {
+            synchronized (status)
+            {
+                while (status.mThumbRequesting)
+                {
                     Images.Thumbnails.cancelThumbnailRequest(cr, -1, t.getId());
                     Video.Thumbnails.cancelThumbnailRequest(cr, -1, t.getId());
                     status.wait(200);
                 }
             }
-        } catch (InterruptedException ex) {
+        }
+        catch (InterruptedException ex)
+        {
             // ignore it.
         }
     }
 
     public Bitmap getThumbnail(ContentResolver cr, long origId, int kind,
-            BitmapFactory.Options options, boolean isVideo) {
-        Thread t = Thread.currentThread();
+                               BitmapFactory.Options options, boolean isVideo)
+    {
+        Thread       t      = Thread.currentThread();
         ThreadStatus status = getOrCreateThreadStatus(t);
 
-        if (!canThreadDecoding(t)) {
+        if (!canThreadDecoding(t))
+        {
             Log.d(TAG, "Thread " + t + " is not allowed to decode.");
             return null;
         }
 
-        try {
-            synchronized (status) {
+        try
+        {
+            synchronized (status)
+            {
                 status.mThumbRequesting = true;
             }
-            if (isVideo) {
+            if (isVideo)
+            {
                 return Video.Thumbnails.getThumbnail(cr, origId, t.getId(),
                         kind, null);
-            } else {
+            }
+            else
+            {
                 return Images.Thumbnails.getThumbnail(cr, origId, t.getId(),
                         kind, null);
             }
-        } finally {
-            synchronized (status) {
+        }
+        finally
+        {
+            synchronized (status)
+            {
                 status.mThumbRequesting = false;
                 status.notifyAll();
             }
         }
     }
 
-    public static synchronized BitmapManager instance() {
-        if (sManager == null) {
+    public static synchronized BitmapManager instance()
+    {
+        if (sManager == null)
+        {
             sManager = new BitmapManager();
         }
         return sManager;
@@ -175,18 +216,21 @@ public class BitmapManager {
      * The real place to delegate bitmap decoding to BitmapFactory.
      */
     public Bitmap decodeFileDescriptor(FileDescriptor fd,
-                                       BitmapFactory.Options options) {
-        if (options.mCancel) {
+                                       BitmapFactory.Options options)
+    {
+        if (options.mCancel)
+        {
             return null;
         }
 
         Thread thread = Thread.currentThread();
-        if (!canThreadDecoding(thread)) {
+        if (!canThreadDecoding(thread))
+        {
             Log.d(TAG, "Thread " + thread + " is not allowed to decode.");
             return null;
         }
 
-        
+
         setDecodingOptions(thread, options);
         Bitmap b = BitmapFactory.decodeFileDescriptor(fd, null, options);
 

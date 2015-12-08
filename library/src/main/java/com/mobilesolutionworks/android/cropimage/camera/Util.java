@@ -16,11 +16,8 @@
 
 package com.mobilesolutionworks.android.cropimage.camera;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -33,8 +30,6 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.animation.Animation;
-import android.view.animation.TranslateAnimation;
 
 import com.mobilesolutionworks.android.cropimage.camera.gallery.IImage;
 
@@ -45,33 +40,41 @@ import java.io.IOException;
 /**
  * Collection of utility functions used in this package.
  */
-public class Util {
-    private static final String TAG = "Util";
-    public static final int DIRECTION_LEFT = 0;
-    public static final int DIRECTION_RIGHT = 1;
-    public static final int DIRECTION_UP = 2;
-    public static final int DIRECTION_DOWN = 3;
+public class Util
+{
+    private static final String TAG             = "Util";
+    public static final  int    DIRECTION_LEFT  = 0;
+    public static final  int    DIRECTION_RIGHT = 1;
+    public static final  int    DIRECTION_UP    = 2;
+    public static final  int    DIRECTION_DOWN  = 3;
 
     private static OnClickListener sNullOnClickListener;
 
-    private Util() {
+    private Util()
+    {
     }
 
     // Rotates the bitmap by the specified degree.
     // If a new bitmap is created, the original bitmap is recycled.
-    public static Bitmap rotate(Bitmap b, int degrees) {
-        if (degrees != 0 && b != null) {
+    public static Bitmap rotate(Bitmap b, int degrees)
+    {
+        if (degrees != 0 && b != null)
+        {
             Matrix m = new Matrix();
             m.setRotate(degrees,
                     (float) b.getWidth() / 2, (float) b.getHeight() / 2);
-            try {
+            try
+            {
                 Bitmap b2 = Bitmap.createBitmap(
                         b, 0, 0, b.getWidth(), b.getHeight(), m, true);
-                if (b != b2) {
+                if (b != b2)
+                {
                     b.recycle();
                     b = b2;
                 }
-            } catch (OutOfMemoryError ex) {
+            }
+            catch (OutOfMemoryError ex)
+            {
                 // We have no memory to rotate. Return the original bitmap.
             }
         }
@@ -98,17 +101,22 @@ public class Util {
      * request is 3. So we round up the sample size to avoid OOM.
      */
     public static int computeSampleSize(BitmapFactory.Options options,
-            int minSideLength, int maxNumOfPixels) {
+                                        int minSideLength, int maxNumOfPixels)
+    {
         int initialSize = computeInitialSampleSize(options, minSideLength,
                 maxNumOfPixels);
 
         int roundedSize;
-        if (initialSize <= 8) {
+        if (initialSize <= 8)
+        {
             roundedSize = 1;
-            while (roundedSize < initialSize) {
+            while (roundedSize < initialSize)
+            {
                 roundedSize <<= 1;
             }
-        } else {
+        }
+        else
+        {
             roundedSize = (initialSize + 7) / 8 * 8;
         }
 
@@ -116,7 +124,8 @@ public class Util {
     }
 
     private static int computeInitialSampleSize(BitmapFactory.Options options,
-            int minSideLength, int maxNumOfPixels) {
+                                                int minSideLength, int maxNumOfPixels)
+    {
         double w = options.outWidth;
         double h = options.outHeight;
 
@@ -124,25 +133,31 @@ public class Util {
                 (int) Math.ceil(Math.sqrt(w * h / maxNumOfPixels));
         int upperBound = (minSideLength == IImage.UNCONSTRAINED) ? 128 :
                 (int) Math.min(Math.floor(w / minSideLength),
-                Math.floor(h / minSideLength));
+                        Math.floor(h / minSideLength));
 
-        if (upperBound < lowerBound) {
+        if (upperBound < lowerBound)
+        {
             // return the larger one when there is no overlapping zone.
             return lowerBound;
         }
 
         if ((maxNumOfPixels == IImage.UNCONSTRAINED) &&
-                (minSideLength == IImage.UNCONSTRAINED)) {
+                (minSideLength == IImage.UNCONSTRAINED))
+        {
             return 1;
-        } else if (minSideLength == IImage.UNCONSTRAINED) {
+        }
+        else if (minSideLength == IImage.UNCONSTRAINED)
+        {
             return lowerBound;
-        } else {
+        }
+        else
+        {
             return upperBound;
         }
     }
 
     // Whether we should recycle the input (unless the output is the input).
-    public static final boolean RECYCLE_INPUT = true;
+    public static final boolean RECYCLE_INPUT    = true;
     public static final boolean NO_RECYCLE_INPUT = false;
 
     public static Bitmap transform(Matrix scaler,
@@ -150,10 +165,12 @@ public class Util {
                                    int targetWidth,
                                    int targetHeight,
                                    boolean scaleUp,
-                                   boolean recycle) {
+                                   boolean recycle)
+    {
         int deltaX = source.getWidth() - targetWidth;
         int deltaY = source.getHeight() - targetHeight;
-        if (!scaleUp && (deltaX < 0 || deltaY < 0)) {
+        if (!scaleUp && (deltaX < 0 || deltaY < 0))
+        {
             /*
              * In this case the bitmap is smaller, at least in one dimension,
              * than the target.  Transform it by placing as much of the image
@@ -171,7 +188,7 @@ public class Util {
                     deltaYHalf,
                     deltaXHalf + Math.min(targetWidth, source.getWidth()),
                     deltaYHalf + Math.min(targetHeight, source.getHeight()));
-            int dstX = (targetWidth  - src.width())  / 2;
+            int dstX = (targetWidth - src.width()) / 2;
             int dstY = (targetHeight - src.height()) / 2;
             Rect dst = new Rect(
                     dstX,
@@ -179,43 +196,57 @@ public class Util {
                     targetWidth - dstX,
                     targetHeight - dstY);
             c.drawBitmap(source, src, dst, null);
-            if (recycle) {
+            if (recycle)
+            {
                 source.recycle();
             }
             return b2;
         }
-        float bitmapWidthF = source.getWidth();
+        float bitmapWidthF  = source.getWidth();
         float bitmapHeightF = source.getHeight();
 
         float bitmapAspect = bitmapWidthF / bitmapHeightF;
         float viewAspect   = (float) targetWidth / targetHeight;
 
-        if (bitmapAspect > viewAspect) {
+        if (bitmapAspect > viewAspect)
+        {
             float scale = targetHeight / bitmapHeightF;
-            if (scale < .9F || scale > 1F) {
+            if (scale < .9F || scale > 1F)
+            {
                 scaler.setScale(scale, scale);
-            } else {
+            }
+            else
+            {
                 scaler = null;
             }
-        } else {
+        }
+        else
+        {
             float scale = targetWidth / bitmapWidthF;
-            if (scale < .9F || scale > 1F) {
+            if (scale < .9F || scale > 1F)
+            {
                 scaler.setScale(scale, scale);
-            } else {
+            }
+            else
+            {
                 scaler = null;
             }
         }
 
         Bitmap b1;
-        if (scaler != null) {
+        if (scaler != null)
+        {
             // this is used for minithumb and crop, so we want to filter here.
             b1 = Bitmap.createBitmap(source, 0, 0,
                     source.getWidth(), source.getHeight(), scaler, true);
-        } else {
+        }
+        else
+        {
             b1 = source;
         }
 
-        if (recycle && b1 != source) {
+        if (recycle && b1 != source)
+        {
             source.recycle();
         }
 
@@ -229,8 +260,10 @@ public class Util {
                 targetWidth,
                 targetHeight);
 
-        if (b2 != b1) {
-            if (recycle || b1 != source) {
+        if (b2 != b1)
+        {
+            if (recycle || b1 != source)
+            {
                 b1.recycle();
             }
         }
@@ -238,29 +271,40 @@ public class Util {
         return b2;
     }
 
-    public static <T>  int indexOf(T [] array, T s) {
-        for (int i = 0; i < array.length; i++) {
-            if (array[i].equals(s)) {
+    public static <T> int indexOf(T[] array, T s)
+    {
+        for (int i = 0; i < array.length; i++)
+        {
+            if (array[i].equals(s))
+            {
                 return i;
             }
         }
         return -1;
     }
 
-    public static void closeSilently(Closeable c) {
+    public static void closeSilently(Closeable c)
+    {
         if (c == null) return;
-        try {
+        try
+        {
             c.close();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             // do nothing
         }
     }
 
-    public static void closeSilently(ParcelFileDescriptor c) {
+    public static void closeSilently(ParcelFileDescriptor c)
+    {
         if (c == null) return;
-        try {
+        try
+        {
             c.close();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             // do nothing
         }
     }
@@ -271,27 +315,36 @@ public class Util {
      * @param uri
      */
     public static Bitmap makeBitmap(int minSideLength, int maxNumOfPixels,
-            Uri uri, ContentResolver cr, boolean useNative) {
+                                    Uri uri, ContentResolver cr, boolean useNative)
+    {
         ParcelFileDescriptor input = null;
-        try {
+        try
+        {
             input = cr.openFileDescriptor(uri, "r");
             BitmapFactory.Options options = null;
-            if (useNative) {
+            if (useNative)
+            {
                 options = createNativeAllocOptions();
             }
             return makeBitmap(minSideLength, maxNumOfPixels, uri, cr, input,
                     options);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             return null;
-        } finally {
+        }
+        finally
+        {
             closeSilently(input);
         }
     }
 
     public static Bitmap makeBitmap(int minSideLength, int maxNumOfPixels,
-            ParcelFileDescriptor pfd, boolean useNative) {
+                                    ParcelFileDescriptor pfd, boolean useNative)
+    {
         BitmapFactory.Options options = null;
-        if (useNative) {
+        if (useNative)
+        {
             options = createNativeAllocOptions();
         }
         return makeBitmap(minSideLength, maxNumOfPixels, null, null, pfd,
@@ -299,9 +352,11 @@ public class Util {
     }
 
     public static Bitmap makeBitmap(int minSideLength, int maxNumOfPixels,
-            Uri uri, ContentResolver cr, ParcelFileDescriptor pfd,
-            BitmapFactory.Options options) {
-        try {
+                                    Uri uri, ContentResolver cr, ParcelFileDescriptor pfd,
+                                    BitmapFactory.Options options)
+    {
+        try
+        {
             if (pfd == null) pfd = makeInputStream(uri, cr);
             if (pfd == null) return null;
             if (options == null) options = new BitmapFactory.Options();
@@ -310,7 +365,8 @@ public class Util {
             options.inJustDecodeBounds = true;
             BitmapManager.instance().decodeFileDescriptor(fd, options);
             if (options.mCancel || options.outWidth == -1
-                    || options.outHeight == -1) {
+                    || options.outHeight == -1)
+            {
                 return null;
             }
             options.inSampleSize = computeSampleSize(
@@ -320,60 +376,79 @@ public class Util {
             options.inDither = false;
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
             return BitmapManager.instance().decodeFileDescriptor(fd, options);
-        } catch (OutOfMemoryError ex) {
+        }
+        catch (OutOfMemoryError ex)
+        {
             Log.e(TAG, "Got oom exception ", ex);
             return null;
-        } finally {
+        }
+        finally
+        {
             closeSilently(pfd);
         }
     }
 
     private static ParcelFileDescriptor makeInputStream(
-            Uri uri, ContentResolver cr) {
-        try {
+            Uri uri, ContentResolver cr)
+    {
+        try
+        {
             return cr.openFileDescriptor(uri, "r");
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             return null;
         }
     }
 
-    public static synchronized OnClickListener getNullOnClickListener() {
-        if (sNullOnClickListener == null) {
-            sNullOnClickListener = new OnClickListener() {
-                public void onClick(View v) {
+    public static synchronized OnClickListener getNullOnClickListener()
+    {
+        if (sNullOnClickListener == null)
+        {
+            sNullOnClickListener = new OnClickListener()
+            {
+                public void onClick(View v)
+                {
                 }
             };
         }
         return sNullOnClickListener;
     }
 
-    public static void Assert(boolean cond) {
-        if (!cond) {
+    public static void Assert(boolean cond)
+    {
+        if (!cond)
+        {
             throw new AssertionError();
         }
     }
 
-    public static boolean equals(String a, String b) {
+    public static boolean equals(String a, String b)
+    {
         // return true if both string are null or the content equals
         return a == b || a.equals(b);
     }
 
     private static class BackgroundJob
-            extends MonitoredActivity.LifeCycleAdapter implements Runnable {
+            extends MonitoredActivity.LifeCycleAdapter implements Runnable
+    {
 
         private final MonitoredActivity mActivity;
-        private final ProgressDialog mDialog;
-        private final Runnable mJob;
-        private final Handler mHandler;
-        private final Runnable mCleanupRunner = new Runnable() {
-            public void run() {
+        private final ProgressDialog    mDialog;
+        private final Runnable          mJob;
+        private final Handler           mHandler;
+        private final Runnable mCleanupRunner = new Runnable()
+        {
+            public void run()
+            {
                 mActivity.removeLifeCycleListener(BackgroundJob.this);
                 if (mDialog.getWindow() != null) mDialog.dismiss();
             }
         };
 
         public BackgroundJob(MonitoredActivity activity, Runnable job,
-                ProgressDialog dialog, Handler handler) {
+                             ProgressDialog dialog, Handler handler)
+        {
             mActivity = activity;
             mDialog = dialog;
             mJob = job;
@@ -381,17 +456,22 @@ public class Util {
             mHandler = handler;
         }
 
-        public void run() {
-            try {
+        public void run()
+        {
+            try
+            {
                 mJob.run();
-            } finally {
+            }
+            finally
+            {
                 mHandler.post(mCleanupRunner);
             }
         }
 
 
         @Override
-        public void onActivityDestroyed(MonitoredActivity activity) {
+        public void onActivityDestroyed(MonitoredActivity activity)
+        {
             // We get here only when the onDestroyed being called before
             // the mCleanupRunner. So, run it now and remove it from the queue
             mCleanupRunner.run();
@@ -399,18 +479,21 @@ public class Util {
         }
 
         @Override
-        public void onActivityStopped(MonitoredActivity activity) {
+        public void onActivityStopped(MonitoredActivity activity)
+        {
             mDialog.hide();
         }
 
         @Override
-        public void onActivityStarted(MonitoredActivity activity) {
+        public void onActivityStarted(MonitoredActivity activity)
+        {
             mDialog.show();
         }
     }
 
     public static void startBackgroundJob(MonitoredActivity activity,
-            String title, String message, Runnable job, Handler handler) {
+                                          String title, String message, Runnable job, Handler handler)
+    {
         // Make the progress dialog uncancelable, so that we can gurantee
         // the thread will be done before the activity getting destroyed.
         ProgressDialog dialog = ProgressDialog.show(
@@ -419,8 +502,9 @@ public class Util {
     }
 
     // Returns an intent which is used for "set as" menu items.
-    public static Intent createSetAsIntent(IImage image) {
-        Uri u = image.fullSizeImageUri();
+    public static Intent createSetAsIntent(IImage image)
+    {
+        Uri    u      = image.fullSizeImageUri();
         Intent intent = new Intent(Intent.ACTION_ATTACH_DATA);
         intent.setDataAndType(u, image.getMimeType());
         intent.putExtra("mimeType", image.getMimeType());
@@ -428,7 +512,8 @@ public class Util {
     }
 
     // Returns Options that set the puregeable flag for Bitmap decode.
-    public static BitmapFactory.Options createNativeAllocOptions() {
+    public static BitmapFactory.Options createNativeAllocOptions()
+    {
         return new BitmapFactory.Options();
     }
 }

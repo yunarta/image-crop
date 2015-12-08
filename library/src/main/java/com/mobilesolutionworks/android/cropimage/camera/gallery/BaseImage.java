@@ -16,9 +16,6 @@
 
 package com.mobilesolutionworks.android.cropimage.camera.gallery;
 
-import com.mobilesolutionworks.android.cropimage.camera.BitmapManager;
-import com.mobilesolutionworks.android.cropimage.camera.Util;
-
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -26,6 +23,9 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore.Images;
 import android.util.Log;
+
+import com.mobilesolutionworks.android.cropimage.camera.BitmapManager;
+import com.mobilesolutionworks.android.cropimage.camera.Util;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -36,28 +36,30 @@ import java.io.InputStream;
  * and two thumbnail bitmaps as well as other information such as the id, and
  * the path to the actual image data.
  */
-public abstract class BaseImage implements IImage {
-    private static final String TAG = "BaseImage";
-    private static final int UNKNOWN_LENGTH = -1;
+public abstract class BaseImage implements IImage
+{
+    private static final String TAG            = "BaseImage";
+    private static final int    UNKNOWN_LENGTH = -1;
     protected ContentResolver mContentResolver;
 
     // Database field
-    protected Uri mUri;
-    protected long mId;
-    protected String mDataPath;
-    protected final int mIndex;
-    protected String mMimeType;
-    private final long mDateTaken;
-    private String mTitle;
+    protected       Uri    mUri;
+    protected       long   mId;
+    protected       String mDataPath;
+    protected final int    mIndex;
+    protected       String mMimeType;
+    private final   long   mDateTaken;
+    private         String mTitle;
 
     protected BaseImageList mContainer;
 
-    private int mWidth = UNKNOWN_LENGTH;
+    private int mWidth  = UNKNOWN_LENGTH;
     private int mHeight = UNKNOWN_LENGTH;
 
     protected BaseImage(BaseImageList container, ContentResolver cr,
-            long id, int index, Uri uri, String dataPath, String mimeType,
-            long dateTaken, String title) {
+                        long id, int index, Uri uri, String dataPath, String mimeType,
+                        long dateTaken, String title)
+    {
         mContainer = container;
         mContentResolver = cr;
         mId = id;
@@ -69,77 +71,95 @@ public abstract class BaseImage implements IImage {
         mTitle = title;
     }
 
-    public String getDataPath() {
+    public String getDataPath()
+    {
         return mDataPath;
     }
 
     @Override
-    public boolean equals(Object other) {
+    public boolean equals(Object other)
+    {
         if (other == null || !(other instanceof Image)) return false;
         return mUri.equals(((Image) other).mUri);
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return mUri.hashCode();
     }
 
-    public Bitmap fullSizeBitmap(int minSideLength, int maxNumberOfPixels) {
+    public Bitmap fullSizeBitmap(int minSideLength, int maxNumberOfPixels)
+    {
         return fullSizeBitmap(minSideLength, maxNumberOfPixels,
                 IImage.ROTATE_AS_NEEDED, IImage.NO_NATIVE);
     }
 
     public Bitmap fullSizeBitmap(int minSideLength, int maxNumberOfPixels,
-            boolean rotateAsNeeded, boolean useNative) {
+                                 boolean rotateAsNeeded, boolean useNative)
+    {
         Uri url = mContainer.contentUri(mId);
         if (url == null) return null;
 
         Bitmap b = Util.makeBitmap(minSideLength, maxNumberOfPixels,
                 url, mContentResolver, useNative);
 
-        if (b != null && rotateAsNeeded) {
+        if (b != null && rotateAsNeeded)
+        {
             b = Util.rotate(b, getDegreesRotated());
         }
 
         return b;
     }
 
-    public InputStream fullSizeImageData() {
-        try {
+    public InputStream fullSizeImageData()
+    {
+        try
+        {
             InputStream input = mContentResolver.openInputStream(mUri);
             return input;
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             return null;
         }
     }
 
-    public Uri fullSizeImageUri() {
+    public Uri fullSizeImageUri()
+    {
         return mUri;
     }
 
-    public IImageList getContainer() {
+    public IImageList getContainer()
+    {
         return mContainer;
     }
 
-    public long getDateTaken() {
+    public long getDateTaken()
+    {
         return mDateTaken;
     }
 
-    public int getDegreesRotated() {
+    public int getDegreesRotated()
+    {
         return 0;
     }
 
-    public String getMimeType() {
+    public String getMimeType()
+    {
         return mMimeType;
     }
 
-    public String getTitle() {
+    public String getTitle()
+    {
         return mTitle;
     }
 
-    private void setupDimension() {
+    private void setupDimension()
+    {
         ParcelFileDescriptor input = null;
-        try {
+        try
+        {
             input = mContentResolver.openFileDescriptor(mUri, "r");
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
@@ -147,45 +167,58 @@ public abstract class BaseImage implements IImage {
                     input.getFileDescriptor(), options);
             mWidth = options.outWidth;
             mHeight = options.outHeight;
-        } catch (FileNotFoundException ex) {
+        }
+        catch (FileNotFoundException ex)
+        {
             mWidth = 0;
             mHeight = 0;
-        } finally {
+        }
+        finally
+        {
             Util.closeSilently(input);
         }
     }
 
-    public int getWidth() {
+    public int getWidth()
+    {
         if (mWidth == UNKNOWN_LENGTH) setupDimension();
         return mWidth;
     }
 
-    public int getHeight() {
+    public int getHeight()
+    {
         if (mHeight == UNKNOWN_LENGTH) setupDimension();
         return mHeight;
     }
 
-    public Bitmap miniThumbBitmap() {
+    public Bitmap miniThumbBitmap()
+    {
         Bitmap b = null;
-        try {
+        try
+        {
             long id = mId;
             b = BitmapManager.instance().getThumbnail(mContentResolver, id,
                     Images.Thumbnails.MICRO_KIND, null, false);
-        } catch (Throwable ex) {
+        }
+        catch (Throwable ex)
+        {
             Log.e(TAG, "miniThumbBitmap got exception", ex);
             return null;
         }
-        if (b != null) {
+        if (b != null)
+        {
             b = Util.rotate(b, getDegreesRotated());
         }
         return b;
     }
 
-    protected void onRemove() {
+    protected void onRemove()
+    {
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return mUri.toString();
     }
 }

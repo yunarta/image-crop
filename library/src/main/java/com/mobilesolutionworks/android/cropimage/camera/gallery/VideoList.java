@@ -27,12 +27,13 @@ import java.util.HashMap;
 /**
  * A collection of all the <code>VideoObject</code> in gallery.
  */
-public class VideoList extends BaseImageList {
+public class VideoList extends BaseImageList
+{
 
     @SuppressWarnings("unused")
     private static final String TAG = "BaseImageList";
 
-    private static final String[] VIDEO_PROJECTION = new String[] {
+    private static final String[] VIDEO_PROJECTION = new String[]{
             Media._ID,
             Media.DATA,
             Media.DATE_TAKEN,
@@ -41,31 +42,35 @@ public class VideoList extends BaseImageList {
             Media.MIME_TYPE,
             Media.DATE_MODIFIED};
 
-    private static final int INDEX_ID = 0;
-    private static final int INDEX_DATA_PATH = 1;
-    private static final int INDEX_DATE_TAKEN = 2;
-    private static final int INDEX_TITLE = 3;
+    private static final int INDEX_ID               = 0;
+    private static final int INDEX_DATA_PATH        = 1;
+    private static final int INDEX_DATE_TAKEN       = 2;
+    private static final int INDEX_TITLE            = 3;
     private static final int INDEX_MIMI_THUMB_MAGIC = 4;
-    private static final int INDEX_MIME_TYPE = 5;
-    private static final int INDEX_DATE_MODIFIED = 6;
+    private static final int INDEX_MIME_TYPE        = 5;
+    private static final int INDEX_DATE_MODIFIED    = 6;
 
     @Override
-    protected long getImageId(Cursor cursor) {
+    protected long getImageId(Cursor cursor)
+    {
         return cursor.getLong(INDEX_ID);
     }
 
     @Override
-    protected BaseImage loadImageFromCursor(Cursor cursor) {
-        long id = cursor.getLong(INDEX_ID);
-        String dataPath = cursor.getString(INDEX_DATA_PATH);
-        long dateTaken = cursor.getLong(INDEX_DATE_TAKEN);
-        if (dateTaken == 0) {
+    protected BaseImage loadImageFromCursor(Cursor cursor)
+    {
+        long   id        = cursor.getLong(INDEX_ID);
+        String dataPath  = cursor.getString(INDEX_DATA_PATH);
+        long   dateTaken = cursor.getLong(INDEX_DATE_TAKEN);
+        if (dateTaken == 0)
+        {
             dateTaken = cursor.getLong(INDEX_DATE_MODIFIED) * 1000;
         }
-        long miniThumbMagic = cursor.getLong(INDEX_MIMI_THUMB_MAGIC);
-        String title = cursor.getString(INDEX_TITLE);
-        String mimeType = cursor.getString(INDEX_MIME_TYPE);
-        if (title == null || title.length() == 0) {
+        long   miniThumbMagic = cursor.getLong(INDEX_MIMI_THUMB_MAGIC);
+        String title          = cursor.getString(INDEX_TITLE);
+        String mimeType       = cursor.getString(INDEX_MIME_TYPE);
+        if (title == null || title.length() == 0)
+        {
             title = dataPath;
         }
         return new VideoObject(this, mContentResolver,
@@ -74,43 +79,52 @@ public class VideoList extends BaseImageList {
     }
 
     public VideoList(ContentResolver resolver, Uri uri, int sort,
-            String bucketId) {
+                     String bucketId)
+    {
         super(resolver, uri, sort, bucketId);
     }
 
-    public HashMap<String, String> getBucketIds() {
+    public HashMap<String, String> getBucketIds()
+    {
         Uri uri = mBaseUri.buildUpon()
                 .appendQueryParameter("distinct", "true").build();
         Cursor c = Images.Media.query(
                 mContentResolver, uri,
-                new String[] {
-                    Media.BUCKET_DISPLAY_NAME,
-                    Media.BUCKET_ID
+                new String[]{
+                        Media.BUCKET_DISPLAY_NAME,
+                        Media.BUCKET_ID
                 },
                 whereClause(), whereClauseArgs(), sortOrder());
-        try {
+        try
+        {
             HashMap<String, String> hash = new HashMap<String, String>();
-            while (c.moveToNext()) {
+            while (c.moveToNext())
+            {
                 hash.put(c.getString(1), c.getString(0));
             }
             return hash;
-        } finally {
+        }
+        finally
+        {
             c.close();
         }
     }
 
-    protected String whereClause() {
+    protected String whereClause()
+    {
         return mBucketId != null
                 ? Images.Media.BUCKET_ID + " = '" + mBucketId + "'"
                 : null;
     }
 
-    protected String[] whereClauseArgs() {
+    protected String[] whereClauseArgs()
+    {
         return null;
     }
 
     @Override
-    protected Cursor createCursor() {
+    protected Cursor createCursor()
+    {
         Cursor c = Images.Media.query(
                 mContentResolver, mBaseUri, VIDEO_PROJECTION,
                 whereClause(), whereClauseArgs(), sortOrder());
