@@ -41,6 +41,8 @@ import android.view.WindowManager;
 import com.mobilesolutionworks.android.cropimage.R;
 import com.mobilesolutionworks.android.cropimage.camera.gallery.IImage;
 import com.mobilesolutionworks.android.cropimage.camera.gallery.IImageList;
+import com.mobilesolutionworks.android.cropkit.CropImageView;
+import com.mobilesolutionworks.android.cropkit.HighlightView;
 import com.mobilesolutionworks.android.cropkit.Util;
 
 import java.io.File;
@@ -337,7 +339,7 @@ public class CropImage extends MonitoredActivity
 
         mImageView.setImageBitmapResetBase(croppedImage, true);
         mImageView.center(true, true);
-        mImageView.mHighlightViews.clear();
+        mImageView.clearHighlights();
 
         // Return the cropped image directly or save it to the specified URI.
         Bundle myExtras = getIntent().getExtras();
