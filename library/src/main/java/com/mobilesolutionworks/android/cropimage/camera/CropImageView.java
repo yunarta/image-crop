@@ -19,6 +19,8 @@ import com.mobilesolutionworks.android.cropkit.ImageViewTouchBase;
 
 import java.util.ArrayList;
 
+import bolts.TaskCompletionSource;
+
 /**
  * Created by yunarta on 7/7/14.
  */
@@ -73,6 +75,23 @@ public class CropImageView extends ImageViewTouchBase
         }
 
         a.recycle();
+    }
+
+    private TaskCompletionSource<Void> mFaceDetectionTask;
+
+    @Override
+    protected void onAttachedToWindow()
+    {
+        super.onAttachedToWindow();
+
+        if (mFaceDetectionTask == null) {
+            mFaceDetectionTask = new TaskCompletionSource<>();
+            if (getScale() == 1F) {
+                center(true, true);
+                mRunFaceDetection.run();
+            }
+        }
+
     }
 
     @Override
@@ -505,6 +524,8 @@ public class CropImageView extends ImageViewTouchBase
 //                        Toast t = Toast.makeText(CropImage.this, metaData.getInt("imagecrop_multiface_crop_help", R.string.z_imagecrop_multiface_crop_help), Toast.LENGTH_SHORT);
 //                        t.show();
                     }
+
+                    mFaceDetectionTask.trySetResult(null);
                 }
             });
         }

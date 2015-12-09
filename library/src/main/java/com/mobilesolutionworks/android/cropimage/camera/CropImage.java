@@ -25,12 +25,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PointF;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.media.FaceDetector;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -39,7 +37,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import com.mobilesolutionworks.android.cropimage.R;
 import com.mobilesolutionworks.android.cropimage.camera.gallery.IImage;
@@ -49,7 +46,6 @@ import com.mobilesolutionworks.android.cropkit.Util;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * The activity can crop specific region of interest from an image.
@@ -201,45 +197,44 @@ public class CropImage extends MonitoredActivity
 
         mImageView.setImageBitmapResetBase(mBitmap, true);
 
-        Util.startBackgroundJob(this, null,
-                getResources().getString(metaData.getInt("runningFaceDetection", R.string.z_imagecrop_runningFaceDetection)),
-                new Runnable()
-                {
-                    public void run()
-                    {
-                        final CountDownLatch latch = new CountDownLatch(1);
-                        final Bitmap b = (mImage != null)
-                                ? mImage.fullSizeBitmap(IImage.UNCONSTRAINED,
-                                1024 * 1024)
-                                : mBitmap;
-                        mHandler.post(new Runnable()
-                        {
-                            public void run()
-                            {
-                                if (b != mBitmap && b != null)
-                                {
-                                    mImageView.setImageBitmapResetBase(b, true);
-                                    mBitmap.recycle();
-                                    mBitmap = b;
-                                }
-                                if (mImageView.getScale() == 1F)
-                                {
-                                    mImageView.center(true, true);
-                                }
-                                latch.countDown();
-                            }
-                        });
-                        try
-                        {
-                            latch.await();
-                        }
-                        catch (InterruptedException e)
-                        {
-                            throw new RuntimeException(e);
-                        }
-                        mRunFaceDetection.run();
-                    }
-                }, mHandler);
+//        Util.startBackgroundJob(this, null,
+//                getResources().getString(metaData.getInt("runningFaceDetection", R.string.z_imagecrop_runningFaceDetection)),
+//                new Runnable()
+//                {
+//                    public void run()
+//                    {
+//                        final CountDownLatch latch = new CountDownLatch(1);
+//                        final Bitmap         b     = (mImage != null) ? mImage.fullSizeBitmap(IImage.UNCONSTRAINED, 1024 * 1024) : mBitmap;
+//                        mHandler.post(new Runnable()
+//                        {
+//                            public void run()
+//                            {
+//                                if (b != mBitmap && b != null)
+//                                {
+//                                    mImageView.setImageBitmapResetBase(b, true);
+//                                    mBitmap.recycle();
+//                                    mBitmap = b;
+//                                }
+//
+//                                if (mImageView.getScale() == 1F)
+//                                {
+//                                    mImageView.center(true, true);
+//                                }
+//                                latch.countDown();
+//                            }
+//                        });
+//
+//                        try
+//                        {
+//                            latch.await();
+//                        }
+//                        catch (InterruptedException e)
+//                        {
+//                            throw new RuntimeException(e);
+//                        }
+//                        mRunFaceDetection.run();
+//                    }
+//                }, mHandler);
     }
 
     private void onSaveClicked()
@@ -492,170 +487,5 @@ public class CropImage extends MonitoredActivity
         super.onDestroy();
     }
 
-    Runnable mRunFaceDetection = new Runnable()
-    {
-        @SuppressWarnings("hiding")
-        float mScale = 1F;
-        Matrix mImageMatrix;
-        FaceDetector.Face[] mFaces = new FaceDetector.Face[3];
-        int mNumFaces;
-
-        // For each face, we create a HightlightView for it.
-        private void handleFace(FaceDetector.Face f)
-        {
-            PointF midPoint = new PointF();
-
-            int r = ((int) (f.eyesDistance() * mScale)) * 2;
-            f.getMidPoint(midPoint);
-            midPoint.x *= mScale;
-            midPoint.y *= mScale;
-
-            int midX = (int) midPoint.x;
-            int midY = (int) midPoint.y;
-
-            HighlightView hv = new HighlightView(mImageView, metaData);
-
-            int width  = mBitmap.getWidth();
-            int height = mBitmap.getHeight();
-
-            Rect imageRect = new Rect(0, 0, width, height);
-
-            RectF faceRect = new RectF(midX, midY, midX, midY);
-            faceRect.inset(-r, -r);
-            if (faceRect.left < 0)
-            {
-                faceRect.inset(-faceRect.left, -faceRect.left);
-            }
-
-            if (faceRect.top < 0)
-            {
-                faceRect.inset(-faceRect.top, -faceRect.top);
-            }
-
-            if (faceRect.right > imageRect.right)
-            {
-                faceRect.inset(faceRect.right - imageRect.right,
-                        faceRect.right - imageRect.right);
-            }
-
-            if (faceRect.bottom > imageRect.bottom)
-            {
-                faceRect.inset(faceRect.bottom - imageRect.bottom,
-                        faceRect.bottom - imageRect.bottom);
-            }
-
-            hv.setup(mImageMatrix, imageRect, faceRect, mCircleCrop,
-                    mAspectX != 0 && mAspectY != 0);
-
-            mImageView.add(hv);
-        }
-
-        // Create a default HightlightView if we found no face in the picture.
-        private void makeDefault()
-        {
-            HighlightView hv = new HighlightView(mImageView, metaData);
-
-            int width  = mBitmap.getWidth();
-            int height = mBitmap.getHeight();
-
-            Rect imageRect = new Rect(0, 0, width, height);
-
-            // make the default size about 4/5 of the width or height
-            int cropWidth  = Math.min(width, height) * 4 / 5;
-            int cropHeight = cropWidth;
-
-            if (mAspectX != 0 && mAspectY != 0)
-            {
-                if (mAspectX > mAspectY)
-                {
-                    cropHeight = cropWidth * mAspectY / mAspectX;
-                }
-                else
-                {
-                    cropWidth = cropHeight * mAspectX / mAspectY;
-                }
-            }
-
-            int x = (width - cropWidth) / 2;
-            int y = (height - cropHeight) / 2;
-
-            RectF cropRect = new RectF(x, y, x + cropWidth, y + cropHeight);
-            hv.setup(mImageMatrix, imageRect, cropRect, mCircleCrop,
-                    mAspectX != 0 && mAspectY != 0);
-            mImageView.add(hv);
-        }
-
-        // Scale the image down for faster face detection.
-        private Bitmap prepareBitmap()
-        {
-            if (mBitmap == null || mBitmap.isRecycled())
-            {
-                return null;
-            }
-
-            // 256 pixels wide is enough.
-            if (mBitmap.getWidth() > 256)
-            {
-                mScale = 256.0F / mBitmap.getWidth();
-            }
-            Matrix matrix = new Matrix();
-            matrix.setScale(mScale, mScale);
-            Bitmap faceBitmap = Bitmap.createBitmap(mBitmap, 0, 0, mBitmap
-                    .getWidth(), mBitmap.getHeight(), matrix, true);
-            return faceBitmap;
-        }
-
-        public void run()
-        {
-            mImageMatrix = mImageView.getImageMatrix();
-            Bitmap faceBitmap = prepareBitmap();
-
-            mScale = 1.0F / mScale;
-            if (faceBitmap != null && mDoFaceDetection)
-            {
-                FaceDetector detector = new FaceDetector(faceBitmap.getWidth(),
-                        faceBitmap.getHeight(), mFaces.length);
-                mNumFaces = detector.findFaces(faceBitmap, mFaces);
-            }
-
-            if (faceBitmap != null && faceBitmap != mBitmap)
-            {
-                faceBitmap.recycle();
-            }
-
-            mHandler.post(new Runnable()
-            {
-                public void run()
-                {
-                    mWaitingToPick = mNumFaces > 1;
-                    if (mNumFaces > 0)
-                    {
-                        for (int i = 0; i < mNumFaces; i++)
-                        {
-                            handleFace(mFaces[i]);
-                        }
-                    }
-                    else
-                    {
-                        makeDefault();
-                    }
-                    mImageView.invalidate();
-                    if (mImageView.mHighlightViews.size() == 1)
-                    {
-                        mCrop = mImageView.mHighlightViews.get(0);
-                        mCrop.setFocus(true);
-                    }
-
-                    if (mNumFaces > 1)
-                    {
-                        Toast t = Toast.makeText(CropImage.this,
-                                metaData.getInt("imagecrop_multiface_crop_help", R.string.z_imagecrop_multiface_crop_help),
-                                Toast.LENGTH_SHORT);
-                        t.show();
-                    }
-                }
-            });
-        }
-    };
 }
 
