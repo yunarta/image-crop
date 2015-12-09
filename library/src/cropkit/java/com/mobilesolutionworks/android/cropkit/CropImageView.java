@@ -15,7 +15,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 
 import com.mobilesolutionworks.android.cropimage.R;
-import com.mobilesolutionworks.android.cropimage.camera.CropImage;
 
 import java.util.ArrayList;
 
@@ -172,7 +171,6 @@ public class CropImageView extends ImageViewTouchBase
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
-        CropImage cropImage = (CropImage) this.getContext();
         if (mSaving)
         {
             return false;
