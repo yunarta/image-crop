@@ -1,4 +1,4 @@
-package com.mobilesolutionworks.android.cropimage.camera;
+package com.mobilesolutionworks.android.cropkit;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -15,7 +15,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 
 import com.mobilesolutionworks.android.cropimage.R;
-import com.mobilesolutionworks.android.cropkit.ImageViewTouchBase;
+import com.mobilesolutionworks.android.cropimage.camera.CropImage;
 
 import java.util.ArrayList;
 
@@ -34,6 +34,8 @@ public class CropImageView extends ImageViewTouchBase
     final LayerDrawable mHighlight;
 
     Bitmap mImageBitmapResetBase;
+
+    private boolean mSaving;
 
     @Override
     protected void onLayout(boolean changed, int left, int top,
@@ -171,7 +173,7 @@ public class CropImageView extends ImageViewTouchBase
     public boolean onTouchEvent(MotionEvent event)
     {
         CropImage cropImage = (CropImage) this.getContext();
-        if (cropImage.mSaving)
+        if (mSaving)
         {
             return false;
         }
@@ -179,7 +181,7 @@ public class CropImageView extends ImageViewTouchBase
         switch (event.getAction())
         {
             case MotionEvent.ACTION_DOWN:
-                if (cropImage.mWaitingToPick)
+                if (mWaitingToPick)
                 {
                     recomputeFocus(event);
                 }
@@ -205,14 +207,14 @@ public class CropImageView extends ImageViewTouchBase
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                if (cropImage.mWaitingToPick)
+                if (mWaitingToPick)
                 {
                     for (int i = 0; i < mHighlightViews.size(); i++)
                     {
                         HighlightView hv = mHighlightViews.get(i);
                         if (hv.hasFocus())
                         {
-                            cropImage.mCrop = hv;
+                            mCrop = hv;
                             for (int j = 0; j < mHighlightViews.size(); j++)
                             {
                                 if (j == i)
@@ -222,7 +224,7 @@ public class CropImageView extends ImageViewTouchBase
                                 mHighlightViews.get(j).setHidden(true);
                             }
                             centerBasedOnHighlightView(hv);
-                            ((CropImage) this.getContext()).mWaitingToPick = false;
+                            mWaitingToPick = false;
                             return true;
                         }
                     }
@@ -236,7 +238,7 @@ public class CropImageView extends ImageViewTouchBase
                 mMotionHighlightView = null;
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (cropImage.mWaitingToPick)
+                if (mWaitingToPick)
                 {
                     recomputeFocus(event);
                 }
@@ -530,4 +532,9 @@ public class CropImageView extends ImageViewTouchBase
             });
         }
     };
+
+    public void clearHighlights()
+    {
+        mHighlightViews.clear();
+    }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.mobilesolutionworks.android.cropimage.camera;
+package com.mobilesolutionworks.android.cropkit;
 
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -33,7 +33,7 @@ import com.mobilesolutionworks.android.cropimage.R;
 // overlayed with the image. There are two coordinate spaces in use. One is
 // image, another is screen. computeLayout() uses mMatrix to map from image
 // space to screen space.
-class HighlightView
+public class HighlightView
 {
     View mContext;  // The View displaying the image.
 
