@@ -58,9 +58,9 @@ public class HighlightView
     {
         android.content.res.Resources resources = mContext.getResources();
 
-        mResizeDrawableWidth = metaData.getDrawable(R.id.cropkit_highlight_horizontal);
-        mResizeDrawableHeight = metaData.getDrawable(R.id.cropkit_highlight_vertical);
-        mResizeDrawableDiagonal = metaData.getDrawable(R.id.cropkit_highlight_diagonal);
+        mResizeDrawableWidth = metaData.findDrawableByLayerId(R.id.cropkit_highlight_horizontal);
+        mResizeDrawableHeight = metaData.findDrawableByLayerId(R.id.cropkit_highlight_vertical);
+        mResizeDrawableDiagonal = metaData.findDrawableByLayerId(R.id.cropkit_highlight_diagonal);
 
 //        DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
 //        (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, metrics);
