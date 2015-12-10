@@ -434,7 +434,7 @@ public class HighlightView
         {
             maintainAspectRatio = true;
         }
-        mMatrix = new Matrix(m);
+        setMatrix(new Matrix(m));
 
         mCropRect = cropRect;
         mImageRect = new RectF(imageRect);
@@ -454,6 +454,16 @@ public class HighlightView
         init();
     }
 
+    public void setMatrix(Matrix matrix)
+    {
+        mMatrix.set(matrix);
+    }
+
+    public void postTranslate(float x, float y)
+    {
+        mMatrix.postTranslate(x, y);
+    }
+
     enum ModifyMode
     {
         None, Move, Grow
@@ -463,8 +473,8 @@ public class HighlightView
 
     Rect mDrawRect;  // in screen space
     private RectF mImageRect;  // in image space
-    RectF  mCropRect;  // in image space
-    Matrix mMatrix;
+    RectF mCropRect;  // in image space
+    private Matrix mMatrix;
 
     private boolean mMaintainAspectRatio = false;
     private float mInitialAspectRatio;
