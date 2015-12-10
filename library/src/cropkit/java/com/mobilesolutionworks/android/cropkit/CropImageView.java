@@ -462,7 +462,7 @@ public class CropImageView extends ImageViewTouchBase
         if (faceRect.bottom > imageRect.bottom)
             faceRect.inset(faceRect.bottom - imageRect.bottom, faceRect.bottom - imageRect.bottom);
 
-        hv.setup(getImageMatrix(), imageRect, faceRect, mCircleCrop, mAspectX != 0 && mAspectY != 0);
+        hv.setup(new Matrix(), imageRect, faceRect, mCircleCrop, mAspectX != 0 && mAspectY != 0);
         return hv;
 //        add(hv);
     }
@@ -540,8 +540,8 @@ public class CropImageView extends ImageViewTouchBase
 
         public List<HighlightView> call() throws Exception
         {
-            mScale = 1.0F / mScale;
             Bitmap faceBitmap = prepareFaceBitmap();
+            mScale = 1.0F / mScale;
 
             FaceDetector.Face[] facesArray = new FaceDetector.Face[5];
             int                 numFaces   = 0;
