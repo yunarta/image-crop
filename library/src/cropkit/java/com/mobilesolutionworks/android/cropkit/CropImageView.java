@@ -13,6 +13,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.media.FaceDetector;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.mobilesolutionworks.android.cropimage.R;
@@ -48,7 +49,7 @@ public class CropImageView extends ImageViewTouchBase
 
     private boolean mSaving;
 
-    private float mScale;
+    private float mScale = 1;
 
     private HighlightView mCrop;
 
@@ -121,34 +122,32 @@ public class CropImageView extends ImageViewTouchBase
             if (getScale() == 1F)
             {
                 center(true, true);
+                Task.callInBackground(new FaceDetectorTask(this, mScale)).onSuccess(new Continuation<List<FaceDetector.Face>, Object>()
+                {
+                    @Override
+                    public Object then(Task<List<FaceDetector.Face>> task) throws Exception
+                    {
+                        List<FaceDetector.Face> faces = task.getResult();
 
-                Task.callInBackground(new FaceDetectorTask(this, mScale))
-                        .continueWith(new Continuation<List<FaceDetector.Face>, Object>()
+                        mWaitingToPick = faces.size() > 1;
+                        if (!faces.isEmpty())
                         {
-                            @Override
-                            public Object then(Task<List<FaceDetector.Face>> task) throws Exception
+                            for (FaceDetector.Face face : faces)
                             {
-                                List<FaceDetector.Face> faces = task.getResult();
+                                createHighlightForFace(face);
+                            }
+                        }
+                        else
+                        {
+                            createDefaultHighlight();
+                        }
 
-                                mWaitingToPick = faces.size() > 1;
-                                if (!faces.isEmpty())
-                                {
-                                    for (FaceDetector.Face face : faces)
-                                    {
-                                        createHighlightForFace(face);
-                                    }
-                                }
-                                else
-                                {
-                                    createDefaultHighlight();
-                                }
-
-                                invalidate();
-                                if (mHighlightViews.size() == 1)
-                                {
-                                    mCrop = mHighlightViews.get(0);
-                                    mCrop.setFocus(true);
-                                }
+                        invalidate();
+                        if (mHighlightViews.size() == 1)
+                        {
+                            mCrop = mHighlightViews.get(0);
+                            mCrop.setFocus(true);
+                        }
 
 //                                if (mNumFaces > 1)
 //                                {
@@ -156,10 +155,22 @@ public class CropImageView extends ImageViewTouchBase
 ////                        t.show();
 //                                }
 
-                                mFaceDetectionTask.trySetResult(null);
-                                return null;
-                            }
-                        }, CropKitExecutors.get());
+                        mFaceDetectionTask.trySetResult(null);
+                        return null;
+                    }
+                }, new CropKitExecutors(getHandler())).continueWith(new Continuation<Object, Object>()
+                {
+                    @Override
+                    public Object then(Task<Object> task) throws Exception
+                    {
+                        if (task.isFaulted())
+                        {
+                            createDefaultHighlight();
+                            Log.d("/!", "error", task.getError());
+                        }
+                        return null;
+                    }
+                });
             }
         }
     }
@@ -511,9 +522,8 @@ public class CropImageView extends ImageViewTouchBase
         }
 
         // Scale the image down for faster face detection.
-        private
         @NonNull
-        Bitmap prepareFaceBitmap()
+        private Bitmap prepareFaceBitmap()
         {
             if (mImageView.mImageBitmapResetBase == null || mImageView.mImageBitmapResetBase.isRecycled())
             {
@@ -538,6 +548,7 @@ public class CropImageView extends ImageViewTouchBase
 
         public List<FaceDetector.Face> call() throws Exception
         {
+            Thread.sleep(2000);
             Bitmap faceBitmap = prepareFaceBitmap();
 
             FaceDetector.Face[] facesArray = new FaceDetector.Face[5];
