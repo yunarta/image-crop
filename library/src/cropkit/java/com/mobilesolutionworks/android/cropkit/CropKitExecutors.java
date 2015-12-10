@@ -19,9 +19,14 @@ public class CropKitExecutors implements Executor
 
     Handler mHandler;
 
-    CropKitExecutors()
+    public CropKitExecutors()
     {
         mHandler = new Handler(Looper.myLooper());
+    }
+
+    public CropKitExecutors(Handler handler)
+    {
+        mHandler = handler;
     }
 
     @Override
