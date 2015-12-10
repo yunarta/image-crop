@@ -34,7 +34,7 @@ public class CropImageView extends ImageViewTouchBase
     // start configuration properties //
     private final LayerDrawable mHighlight;
 
-    private boolean mDoFaceDetection = true;
+    private boolean mDoFaceDetection;
 
     private boolean mCircleCrop;
 
@@ -90,11 +90,13 @@ public class CropImageView extends ImageViewTouchBase
             }
         }
 
-//        mAspectX = a.getInteger(R.styleable.CropImageView_cropKitAspectX, 0);
-//        mAspectY = a.getInteger(R.styleable.CropImageView_cropKitAspectY, 0);
-//
-//        mCircleCrop = a.getBoolean(R.styleable.CropImageView_cropKitCircleCrop, false);
-//        mDoFaceDetection = a.getBoolean(R.styleable.CropImageView_cropKitDetectFace, false);
+        mAspectX = a.getInteger(R.styleable.CropImageView_cropKitAspectX, 0);
+        mAspectY = a.getInteger(R.styleable.CropImageView_cropKitAspectY, 0);
+
+        Log.d("/!", "mAspectX = " + mAspectX + ", mAspectY = " + mAspectY);
+
+        mCircleCrop = a.getBoolean(R.styleable.CropImageView_cropKitCircleCrop, false);
+        mDoFaceDetection = a.getBoolean(R.styleable.CropImageView_cropKitDetectFace, false);
 
         a.recycle();
     }
@@ -129,7 +131,7 @@ public class CropImageView extends ImageViewTouchBase
     {
         super.onAttachedToWindow();
 
-        if (mFaceDetectionTask == null)
+        if (mDoFaceDetection && mFaceDetectionTask == null)
         {
             mFaceDetectionTask = new TaskCompletionSource<>();
             if (getScale() == 1F)
@@ -177,6 +179,17 @@ public class CropImageView extends ImageViewTouchBase
                         return null;
                     }
                 });
+            }
+        }
+        else
+        {
+            add(createDefaultHighlight());
+
+            invalidate();
+            if (mHighlightViews.size() == 1)
+            {
+                mCrop = mHighlightViews.get(0);
+                mCrop.setFocus(true);
             }
         }
     }
@@ -240,7 +253,7 @@ public class CropImageView extends ImageViewTouchBase
         for (int i = 0; i < mHighlightViews.size(); i++)
         {
             HighlightView hv   = mHighlightViews.get(i);
-            int edge = hv.getHit(event.getX(), event.getY());
+            int           edge = hv.getHit(event.getX(), event.getY());
 
             if (edge != HighlightView.GROW_NONE)
             {
@@ -275,7 +288,7 @@ public class CropImageView extends ImageViewTouchBase
                     for (int i = 0; i < mHighlightViews.size(); i++)
                     {
                         HighlightView hv   = mHighlightViews.get(i);
-                        int edge = hv.getHit(event.getX(), event.getY());
+                        int           edge = hv.getHit(event.getX(), event.getY());
                         if (edge != HighlightView.GROW_NONE)
                         {
                             mMotionEdge = edge;
