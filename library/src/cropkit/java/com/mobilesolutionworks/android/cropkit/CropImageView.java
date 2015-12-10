@@ -12,12 +12,15 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.media.FaceDetector;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.mobilesolutionworks.android.cropimage.R;
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
+import bolts.Task;
 import bolts.TaskCompletionSource;
 
 /**
@@ -25,14 +28,19 @@ import bolts.TaskCompletionSource;
  */
 public class CropImageView extends ImageViewTouchBase
 {
-    ArrayList<HighlightView> mHighlightViews      = new ArrayList<HighlightView>();
-    HighlightView            mMotionHighlightView = null;
-    float mLastX, mLastY;
-    int mMotionEdge;
+    private ArrayList<HighlightView> mHighlightViews = new ArrayList<HighlightView>();
 
-    final LayerDrawable mHighlight;
+    private HighlightView mMotionHighlightView = null;
 
-    Bitmap mImageBitmapResetBase;
+    private float mLastX;
+
+    private float mLastY;
+
+    private int mMotionEdge;
+
+    private final LayerDrawable mHighlight;
+
+    private Bitmap mImageBitmapResetBase;
 
     private boolean mSaving;
 
@@ -85,10 +93,23 @@ public class CropImageView extends ImageViewTouchBase
     {
         super.onAttachedToWindow();
 
-        if (mFaceDetectionTask == null) {
+        if (mFaceDetectionTask == null)
+        {
             mFaceDetectionTask = new TaskCompletionSource<>();
-            if (getScale() == 1F) {
+            if (getScale() == 1F)
+            {
                 center(true, true);
+
+                Task.callInBackground(new Callable<Object>()
+                {
+                    @Override
+                    public Object call() throws Exception
+                    {
+                        return null;
+                    }
+                });
+
+                mRunFaceDetection.mImageView = this;
                 mRunFaceDetection.run();
             }
         }
@@ -356,7 +377,7 @@ public class CropImageView extends ImageViewTouchBase
 
     private HighlightView mCrop;
 
-    private boolean mDoFaceDetection;
+    private boolean mDoFaceDetection = true;
 
     private boolean mCircleCrop;
 
@@ -366,23 +387,32 @@ public class CropImageView extends ImageViewTouchBase
 
     private boolean mWaitingToPick;
 
-    Runnable mRunFaceDetection = new Runnable()
-    {
+    FaceDetectorTask mRunFaceDetection = new FaceDetectorTask();
 
-        @SuppressWarnings("hiding")
+    public void clearHighlights()
+    {
+        mHighlightViews.clear();
+    }
+
+    private static class FaceDetectorTask implements Runnable
+    {
+        FaceDetector.Face[] mFaces = new FaceDetector.Face[5];
+
         float mScale = 1F;
+
         Matrix mImageMatrix;
-        FaceDetector.Face[] mFaces = new FaceDetector.Face[3];
+
         int mNumFaces;
 
         CropImageView mImageView;
 
-        // For each face, we create a HightlightView for it.
-        private void handleFace(FaceDetector.Face f)
+        // For each face, we create a HighlightView for it.
+        private void createHighlightForFace(FaceDetector.Face f)
         {
             PointF midPoint = new PointF();
 
             int r = ((int) (f.eyesDistance() * mScale)) * 2;
+
             f.getMidPoint(midPoint);
             midPoint.x *= mScale;
             midPoint.y *= mScale;
@@ -390,10 +420,10 @@ public class CropImageView extends ImageViewTouchBase
             int midX = (int) midPoint.x;
             int midY = (int) midPoint.y;
 
-            HighlightView hv = new HighlightView(mImageView, mHighlight);
+            HighlightView hv = new HighlightView(mImageView, mImageView.mHighlight);
 
-            int width  = mImageBitmapResetBase.getWidth();
-            int height = mImageBitmapResetBase.getHeight();
+            int width  = mImageView.mImageBitmapResetBase.getWidth();
+            int height = mImageView.mImageBitmapResetBase.getHeight();
 
             Rect imageRect = new Rect(0, 0, width, height);
 
@@ -421,17 +451,17 @@ public class CropImageView extends ImageViewTouchBase
                         faceRect.bottom - imageRect.bottom);
             }
 
-            hv.setup(mImageMatrix, imageRect, faceRect, mCircleCrop, mAspectX != 0 && mAspectY != 0);
+            hv.setup(mImageMatrix, imageRect, faceRect, mImageView.mCircleCrop, mImageView.mAspectX != 0 && mImageView.mAspectY != 0);
             mImageView.add(hv);
         }
 
         // Create a default HightlightView if we found no face in the picture.
-        private void makeDefault()
+        private void createDefaultHighlight()
         {
-            HighlightView hv = new HighlightView(mImageView, mHighlight);
+            HighlightView hv = new HighlightView(mImageView, mImageView.mHighlight);
 
-            int width  = mImageBitmapResetBase.getWidth();
-            int height = mImageBitmapResetBase.getHeight();
+            int width  = mImageView.mImageBitmapResetBase.getWidth();
+            int height = mImageView.mImageBitmapResetBase.getHeight();
 
             Rect imageRect = new Rect(0, 0, width, height);
 
@@ -439,15 +469,15 @@ public class CropImageView extends ImageViewTouchBase
             int cropWidth  = Math.min(width, height) * 4 / 5;
             int cropHeight = cropWidth;
 
-            if (mAspectX != 0 && mAspectY != 0)
+            if (mImageView.mAspectX != 0 && mImageView.mAspectY != 0)
             {
-                if (mAspectX > mAspectY)
+                if (mImageView.mAspectX > mImageView.mAspectY)
                 {
-                    cropHeight = cropWidth * mAspectY / mAspectX;
+                    cropHeight = cropWidth * mImageView.mAspectY / mImageView.mAspectX;
                 }
                 else
                 {
-                    cropWidth = cropHeight * mAspectX / mAspectY;
+                    cropWidth = cropHeight * mImageView.mAspectX / mImageView.mAspectY;
                 }
             }
 
@@ -455,68 +485,73 @@ public class CropImageView extends ImageViewTouchBase
             int y = (height - cropHeight) / 2;
 
             RectF cropRect = new RectF(x, y, x + cropWidth, y + cropHeight);
-            hv.setup(mImageMatrix, imageRect, cropRect, mCircleCrop, mAspectX != 0 && mAspectY != 0);
+            hv.setup(mImageMatrix, imageRect, cropRect, mImageView.mCircleCrop, mImageView.mAspectX != 0 && mImageView.mAspectY != 0);
             mImageView.add(hv);
         }
 
         // Scale the image down for faster face detection.
-        private Bitmap prepareBitmap()
+        private Bitmap prepareFaceBitmap()
         {
-            if (mImageBitmapResetBase == null || mImageBitmapResetBase.isRecycled())
+            if (mImageView.mImageBitmapResetBase == null || mImageView.mImageBitmapResetBase.isRecycled())
             {
                 return null;
             }
 
             // 256 pixels wide is enough.
-            if (mImageBitmapResetBase.getWidth() > 256)
+            if (mImageView.mImageBitmapResetBase.getWidth() > 256)
             {
-                mScale = 256.0F / mImageBitmapResetBase.getWidth();
+                mScale = 256.0F / mImageView.mImageBitmapResetBase.getWidth();
             }
             Matrix matrix = new Matrix();
             matrix.setScale(mScale, mScale);
-            Bitmap faceBitmap = Bitmap.createBitmap(mImageBitmapResetBase, 0, 0, mImageBitmapResetBase.getWidth(), mImageBitmapResetBase.getHeight(), matrix, true);
-            return faceBitmap;
+
+            Bitmap faceBitmap = Bitmap.createBitmap(mImageView.mImageBitmapResetBase, 0, 0, mImageView.mImageBitmapResetBase.getWidth(), mImageView.mImageBitmapResetBase.getHeight(), matrix, true);
+            Bitmap b565       = faceBitmap.copy(Bitmap.Config.RGB_565, true);
+
+            faceBitmap.recycle();
+            return b565;
         }
 
         public void run()
         {
             mImageMatrix = mImageView.getImageMatrix();
-            Bitmap faceBitmap = prepareBitmap();
+            Bitmap faceBitmap = prepareFaceBitmap();
 
             mScale = 1.0F / mScale;
-            if (faceBitmap != null && mDoFaceDetection)
+            if (faceBitmap != null && mImageView.mDoFaceDetection)
             {
-                FaceDetector detector = new FaceDetector(faceBitmap.getWidth(),
-                        faceBitmap.getHeight(), mFaces.length);
+                FaceDetector detector = new FaceDetector(faceBitmap.getWidth(), faceBitmap.getHeight(), mFaces.length);
                 mNumFaces = detector.findFaces(faceBitmap, mFaces);
+                Log.d("/!", "face detected = " + mNumFaces);
             }
 
-            if (faceBitmap != null && faceBitmap != mImageBitmapResetBase)
+            if (faceBitmap != null && faceBitmap != mImageView.mImageBitmapResetBase)
             {
                 faceBitmap.recycle();
             }
 
-            mHandler.post(new Runnable()
+            mImageView.mHandler.post(new Runnable()
             {
                 public void run()
                 {
-                    mWaitingToPick = mNumFaces > 1;
+                    mImageView.mWaitingToPick = mNumFaces > 1;
                     if (mNumFaces > 0)
                     {
                         for (int i = 0; i < mNumFaces; i++)
                         {
-                            handleFace(mFaces[i]);
+                            createHighlightForFace(mFaces[i]);
                         }
                     }
                     else
                     {
-                        makeDefault();
+                        createDefaultHighlight();
                     }
+
                     mImageView.invalidate();
                     if (mImageView.mHighlightViews.size() == 1)
                     {
-                        mCrop = mImageView.mHighlightViews.get(0);
-                        mCrop.setFocus(true);
+                        mImageView.mCrop = mImageView.mHighlightViews.get(0);
+                        mImageView.mCrop.setFocus(true);
                     }
 
                     if (mNumFaces > 1)
@@ -525,14 +560,9 @@ public class CropImageView extends ImageViewTouchBase
 //                        t.show();
                     }
 
-                    mFaceDetectionTask.trySetResult(null);
+                    mImageView.mFaceDetectionTask.trySetResult(null);
                 }
             });
         }
-    };
-
-    public void clearHighlights()
-    {
-        mHighlightViews.clear();
     }
 }
