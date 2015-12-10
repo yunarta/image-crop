@@ -434,6 +434,7 @@ public class HighlightView
         {
             maintainAspectRatio = true;
         }
+        mMatrix = new Matrix(m);
         setMatrix(new Matrix(m));
 
         mCropRect = cropRect;
