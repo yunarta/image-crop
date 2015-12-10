@@ -122,24 +122,17 @@ public class CropImageView extends ImageViewTouchBase
             if (getScale() == 1F)
             {
                 center(true, true);
-                Task.callInBackground(new FaceDetectorTask(this, mScale)).onSuccess(new Continuation<List<FaceDetector.Face>, Object>()
+                Task.callInBackground(new FaceDetectorTask(this, mScale)).onSuccess(new Continuation<List<HighlightView>, Object>()
                 {
                     @Override
-                    public Object then(Task<List<FaceDetector.Face>> task) throws Exception
+                    public Object then(Task<List<HighlightView>> task) throws Exception
                     {
-                        List<FaceDetector.Face> faces = task.getResult();
+                        List<HighlightView> views = task.getResult();
 
-                        mWaitingToPick = faces.size() > 1;
-                        if (!faces.isEmpty())
+                        mWaitingToPick = views.size() > 1;
+                        for (HighlightView hv : views)
                         {
-                            for (FaceDetector.Face face : faces)
-                            {
-                                createHighlightForFace(face);
-                            }
-                        }
-                        else
-                        {
-                            createDefaultHighlight();
+                            add(hv);
                         }
 
                         invalidate();
@@ -434,15 +427,15 @@ public class CropImageView extends ImageViewTouchBase
     }
 
     // For each face, we create a HighlightView for it.
-    private void createHighlightForFace(FaceDetector.Face f)
+    private HighlightView createHighlightForFace(FaceDetector.Face f, float scale)
     {
         PointF midPoint = new PointF();
 
-        int r = ((int) (f.eyesDistance() * mScale)) * 2;
+        int r = ((int) (f.eyesDistance() * scale)) * 2;
 
         f.getMidPoint(midPoint);
-        midPoint.x *= mScale;
-        midPoint.y *= mScale;
+        midPoint.x *= scale;
+        midPoint.y *= scale;
 
         int midX = (int) midPoint.x;
         int midY = (int) midPoint.y;
@@ -470,11 +463,12 @@ public class CropImageView extends ImageViewTouchBase
             faceRect.inset(faceRect.bottom - imageRect.bottom, faceRect.bottom - imageRect.bottom);
 
         hv.setup(getImageMatrix(), imageRect, faceRect, mCircleCrop, mAspectX != 0 && mAspectY != 0);
-        add(hv);
+        return hv;
+//        add(hv);
     }
 
     // Create a default HightlightView if we found no face in the picture.
-    private void createDefaultHighlight()
+    private HighlightView createDefaultHighlight()
     {
         HighlightView hv = new HighlightView(this, mHighlight);
 
@@ -504,21 +498,19 @@ public class CropImageView extends ImageViewTouchBase
 
         RectF cropRect = new RectF(x, y, x + cropWidth, y + cropHeight);
         hv.setup(getImageMatrix(), imageRect, cropRect, mCircleCrop, mAspectX != 0 && mAspectY != 0);
-        add(hv);
+        return hv;
+//        add(hv);
     }
 
-    private static class FaceDetectorTask implements Callable<List<FaceDetector.Face>>
+    private class FaceDetectorTask implements Callable<List<HighlightView>>
     {
-
-
         CropImageView mImageView;
 
-        float mScale = 1F;
+        float mScale;
 
         public FaceDetectorTask(CropImageView imageView, float scale)
         {
             mImageView = imageView;
-            mScale = 1.0F / scale;
         }
 
         // Scale the image down for faster face detection.
@@ -546,9 +538,9 @@ public class CropImageView extends ImageViewTouchBase
             return b565;
         }
 
-        public List<FaceDetector.Face> call() throws Exception
+        public List<HighlightView> call() throws Exception
         {
-            Thread.sleep(2000);
+            mScale = 1.0F / mScale;
             Bitmap faceBitmap = prepareFaceBitmap();
 
             FaceDetector.Face[] facesArray = new FaceDetector.Face[5];
@@ -559,13 +551,20 @@ public class CropImageView extends ImageViewTouchBase
 
             faceBitmap.recycle();
 
-            List<FaceDetector.Face> faces = new ArrayList<>();
-            for (int i = 0; i < numFaces; i++)
+            List<HighlightView> hvs = new ArrayList<>();
+            if (numFaces != 0)
             {
-                faces.add(facesArray[i]);
+                for (int i = 0; i < numFaces; i++)
+                {
+                    hvs.add(createHighlightForFace(facesArray[i], mScale));
+                }
+            }
+            else
+            {
+                hvs.add(createDefaultHighlight());
             }
 
-            return faces;
+            return hvs;
         }
     }
 }
