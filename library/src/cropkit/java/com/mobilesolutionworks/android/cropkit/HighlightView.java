@@ -25,6 +25,7 @@ import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.os.Build;
 import android.view.View;
 
 import com.mobilesolutionworks.android.cropimage.R;
@@ -66,6 +67,7 @@ public class HighlightView
     }
 
     boolean mIsFocused;
+
     boolean mHidden;
 
     public boolean hasFocus()
@@ -89,6 +91,7 @@ public class HighlightView
         {
             return;
         }
+
         canvas.save();
         Path path = new Path();
         if (!hasFocus())
@@ -100,14 +103,12 @@ public class HighlightView
         {
             Rect viewDrawingRect = new Rect();
             mContext.getDrawingRect(viewDrawingRect);
+
             if (mCircle)
             {
                 float width  = mDrawRect.width();
                 float height = mDrawRect.height();
-                path.addCircle(mDrawRect.left + (width / 2),
-                        mDrawRect.top + (height / 2),
-                        width / 2,
-                        Path.Direction.CW);
+                path.addCircle(mDrawRect.left + (width / 2), mDrawRect.top + (height / 2), width / 2, Path.Direction.CW);
                 mOutlinePaint.setColor(0xFF333EDE);
             }
             else
@@ -115,9 +116,14 @@ public class HighlightView
                 path.addRect(new RectF(mDrawRect), Path.Direction.CW);
                 mOutlinePaint.setColor(0xFFFF8A00);
             }
-            canvas.clipPath(path, Region.Op.DIFFERENCE);
-            canvas.drawRect(viewDrawingRect,
-                    hasFocus() ? mFocusPaint : mNoFocusPaint);
+
+            path.close();
+
+            if (Build.VERSION.SDK_INT >= 20)
+            {
+                canvas.clipPath(path, Region.Op.DIFFERENCE);
+                canvas.drawRect(viewDrawingRect, hasFocus() ? mFocusPaint : mNoFocusPaint);
+            }
 
             canvas.restore();
             canvas.drawPath(path, mOutlinePaint);
@@ -134,6 +140,7 @@ public class HighlightView
                         x, y,
                         x + mResizeDrawableDiagonal.getIntrinsicWidth(), y + mResizeDrawableDiagonal.getIntrinsicHeight()
                 );
+
                 mResizeDrawableDiagonal.draw(canvas);
             }
             else
@@ -434,8 +441,8 @@ public class HighlightView
         {
             maintainAspectRatio = true;
         }
+
         mMatrix = new Matrix(m);
-        setMatrix(new Matrix(m));
 
         mCropRect = cropRect;
         mImageRect = new RectF(imageRect);
