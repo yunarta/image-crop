@@ -136,8 +136,8 @@ public class CropKitFragment extends Fragment
                 canvas.drawBitmap(baseBitmap, r, dstRect, null);
             }
 
-            kit.setImageBitmapResetBase(croppedImage, true);
-            kit.center(true, true);
+//            kit.setImageBitmapResetBase(croppedImage, true);
+//            kit.center(true, true);
 
 //            // Release bitmap memory as soon as possible
 //            mImageView.clear();
