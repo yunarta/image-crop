@@ -113,8 +113,11 @@ public class CropImageView extends ImageViewTouchBase
 
     public void setUserRect(Rect rect)
     {
-        mDoFaceDetection = false;
-        mUserRect = rect;
+        if (rect != null)
+        {
+            mDoFaceDetection = false;
+            mUserRect = rect;
+        }
     }
 
     @Override
