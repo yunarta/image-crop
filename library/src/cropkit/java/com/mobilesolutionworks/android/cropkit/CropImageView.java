@@ -2,12 +2,7 @@ package com.mobilesolutionworks.android.cropkit;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.PointF;
-import android.graphics.Rect;
-import android.graphics.RectF;
+import android.graphics.*;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.media.FaceDetector;
@@ -15,16 +10,14 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
 import android.view.MotionEvent;
-
+import bolts.Continuation;
+import bolts.Task;
+import bolts.TaskCompletionSource;
 import com.mobilesolutionworks.android.cropimage.R;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-
-import bolts.Continuation;
-import bolts.Task;
-import bolts.TaskCompletionSource;
 
 /**
  * Realization of old CropKit functionality, now most functionality managed internally by the widget.
@@ -67,6 +60,8 @@ public class CropImageView extends ImageViewTouchBase
 
     private boolean mWaitingToPick;
 
+    private Rect mUserRect;
+
     public CropImageView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
@@ -75,7 +70,10 @@ public class CropImageView extends ImageViewTouchBase
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CropImageView, R.attr.cropKitStyle, R.style.CropKit);
 
         Drawable dHighlight = a.getDrawable(R.styleable.CropImageView_cropKitHighlight);
-        if (!(dHighlight instanceof LayerDrawable)) throw new IllegalStateException("cropKitHightlight must be a layer-list");
+        if (!(dHighlight instanceof LayerDrawable))
+        {
+            throw new IllegalStateException("cropKitHightlight must be a layer-list");
+        }
 
         mHighlight = (LayerDrawable) dHighlight;
         int[] idCheck = {R.id.cropkit_highlight_diagonal, R.id.cropkit_highlight_horizontal, R.id.cropkit_highlight_vertical};
@@ -111,6 +109,12 @@ public class CropImageView extends ImageViewTouchBase
     public void setFaceDetection(boolean enabled)
     {
         mDoFaceDetection = enabled;
+    }
+
+    public void setUserRect(Rect rect)
+    {
+        mDoFaceDetection = false;
+        mUserRect = rect;
     }
 
     @Override
@@ -220,7 +224,14 @@ public class CropImageView extends ImageViewTouchBase
         }
         else
         {
-            _add(createDefaultHighlight());
+            if (mUserRect != null)
+            {
+                _add(createHighlight(mUserRect));
+            }
+            else
+            {
+                _add(createDefaultHighlight());
+            }
 
             invalidate();
             if (mHighlightViews.size() == 1)
@@ -527,16 +538,24 @@ public class CropImageView extends ImageViewTouchBase
         faceRect.inset(-r, -r);
 
         if (faceRect.left < 0)
+        {
             faceRect.inset(-faceRect.left, -faceRect.left);
+        }
 
         if (faceRect.top < 0)
+        {
             faceRect.inset(-faceRect.top, -faceRect.top);
+        }
 
         if (faceRect.right > imageRect.right)
+        {
             faceRect.inset(faceRect.right - imageRect.right, faceRect.right - imageRect.right);
+        }
 
         if (faceRect.bottom > imageRect.bottom)
+        {
             faceRect.inset(faceRect.bottom - imageRect.bottom, faceRect.bottom - imageRect.bottom);
+        }
 
         Log.d("/!", "getImageViewMatrix() = " + getImageViewMatrix());
 
@@ -576,6 +595,46 @@ public class CropImageView extends ImageViewTouchBase
         int y = (height - cropHeight) / 2;
 
         RectF cropRect = new RectF(x, y, x + cropWidth, y + cropHeight);
+
+        Log.d("/!", "getImageViewMatrix() = " + getImageViewMatrix());
+
+        HighlightView hv = new HighlightView(this, mHighlight);
+        hv.setup(getImageViewMatrix(), imageRect, cropRect, mCircleCrop, mAspectX != 0 && mAspectY != 0);
+
+        return hv;
+    }
+
+    // Create a default HightlightView if we found no face in the picture.
+    private HighlightView createHighlight(Rect rect)
+    {
+        int width  = mImageBitmapResetBase.getWidth();
+        int height = mImageBitmapResetBase.getHeight();
+
+        Rect imageRect = new Rect(0, 0, width, height);
+
+//
+//        // make the default size about 4/5 of the width or height
+//        int cropWidth = Math.min(width, height) * 4 / 5;
+//
+//        //noinspection SuspiciousNameCombination
+//        int cropHeight = cropWidth;
+//
+//        if (mAspectX != 0 && mAspectY != 0)
+//        {
+//            if (mAspectX > mAspectY)
+//            {
+//                cropHeight = cropWidth * mAspectY / mAspectX;
+//            }
+//            else
+//            {
+//                cropWidth = cropHeight * mAspectX / mAspectY;
+//            }
+//        }
+//
+//        int x = (width - cropWidth) / 2;
+//        int y = (height - cropHeight) / 2;
+
+        RectF cropRect = new RectF(rect);
 
         Log.d("/!", "getImageViewMatrix() = " + getImageViewMatrix());
 
