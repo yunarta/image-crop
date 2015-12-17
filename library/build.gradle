@@ -1,17 +1,16 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.mobilesolutionworks.android-autoconfig'
 
 group 'com.mobilesolutionworks'
 version '1.0'
 
-apply from: ('https://raw.githubusercontent.com/yunarta/works-gradle-script/master/auto-configure.gradle')
-
 android {
-    compileSdkVersion autoCompileSdkVersion(23)
-    buildToolsVersion autoBuildToolsVersion('23.0.2')
+    compileSdkVersion autoConfig.sdk(23)
+    buildToolsVersion autoConfig.buildTools('23.0.2')
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion autoCompileSdkVersion(22)
+        targetSdkVersion autoConfig.sdk(23)
 
         versionCode 1
         versionName version
@@ -30,9 +29,14 @@ android {
     }
 }
 
+configurations {
+    provided
+//    compile.extendsFrom provided
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-v4:' + autoSupportLibVersion('23.1.1')
+    provided 'com.android.support:support-v4:' + autoConfig.support('23.1.1')
 
     compile 'com.mobilesolutionworks:works-exif:1.0.0'
     compile 'com.mobilesolutionworks:works-builder:1.1.0'
