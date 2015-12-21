@@ -191,8 +191,15 @@ public class CropImageView extends ImageViewTouchBase
                     mWaitingToPick = views.size() > 1;
                     if (!mWaitingToPick)
                     {
-                        HighlightView hv = createDefaultHighlight();
-                        _add(hv);
+                        if (views.isEmpty())
+                        {
+                            _add(createDefaultHighlight());
+                        }
+                        else
+                        {
+                            HighlightView hv = views.get(0);
+                            _add(hv);
+                        }
                     }
                     else
                     {
