@@ -189,9 +189,17 @@ public class CropImageView extends ImageViewTouchBase
                     List<HighlightView> views = task.getResult();
 
                     mWaitingToPick = views.size() > 1;
-                    for (HighlightView hv : views)
+                    if (!mWaitingToPick)
                     {
+                        HighlightView hv = createDefaultHighlight();
                         _add(hv);
+                    }
+                    else
+                    {
+                        for (HighlightView hv : views)
+                        {
+                            _add(hv);
+                        }
                     }
 
                     invalidate();
@@ -218,7 +226,6 @@ public class CropImageView extends ImageViewTouchBase
                 {
                     if (task.isFaulted())
                     {
-                        createDefaultHighlight();
                         Log.d("/!", "error", task.getError());
                     }
                     return null;
