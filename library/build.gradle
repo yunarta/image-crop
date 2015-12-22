@@ -20,6 +20,8 @@ android {
         main {
             java.srcDirs += ['src/cropkit/java']
             res.srcDirs += ['src/cropkit/res']
+
+            compileClasspath += configurations.provided
         }
     }
 
@@ -31,15 +33,14 @@ android {
 
 configurations {
     provided
-//    compile.extendsFrom provided
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     provided 'com.android.support:support-v4:' + autoConfig.support('23.1.1')
+    provided 'com.mobilesolutionworks:bolts-tasks:1.3.1.2'
 
     compile 'com.mobilesolutionworks:works-exif:1.0.0'
     compile 'com.mobilesolutionworks:works-builder:1.1.0'
-    compile 'com.mobilesolutionworks:bolts-tasks:1.3.1.2'
     compile 'it.sephiroth.android.library.imagezoom:imagezoom:1.0.5'
 }
