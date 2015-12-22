@@ -22,8 +22,8 @@ public class MainActivity extends AppCompatActivity
         if (savedInstanceState == null)
         {
             CropKitBuilder ckb = new CropKitBuilder();
-            ckb.aspectX = 1;
-            ckb.aspectY = 1;
+            ckb.aspectX = 3;
+            ckb.aspectY = 4;
             ckb.detectFace = true;
 
             CropKitFragment fragment = new MyCropKitFragment();

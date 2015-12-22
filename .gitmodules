@@ -1,0 +1,3 @@
+[submodule "Bolts-Android"]
+	path = Bolts-Android
+	url = git@github.com:yunarta/Bolts-Android.git

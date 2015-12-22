@@ -2,14 +2,14 @@ package com.mobilesolutionworks.android.cropkit.sample;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Rect;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.mobilesolutionworks.android.cropkit.CropKitFragment;
 
 /**
@@ -52,10 +52,32 @@ public class MyCropKitFragment extends CropKitFragment
             @Override
             public void run()
             {
-                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.three);
-                getCropKit().setImageBitmapResetBase(bitmap, true);
+                DisplayMetrics metrics         = getResources().getDisplayMetrics();
+                int            maxScreenLength = Math.max(metrics.widthPixels, metrics.heightPixels);
+
+                BitmapFactory.Options opts = new BitmapFactory.Options();
+                opts.inJustDecodeBounds = true;
+
+                BitmapFactory.decodeResource(getResources(), R.drawable.halcyon1, opts);
+                int maxLength = Math.max(opts.outWidth, opts.outHeight);
+
+                opts.inSampleSize = Math.max(1, maxLength / maxScreenLength * 2);
+                opts.inJustDecodeBounds = false;
+                opts.inDensity = metrics.densityDpi;
+                opts.inScreenDensity = metrics.densityDpi;
+                opts.inTargetDensity = metrics.densityDpi;
+
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.halcyon1, opts);
+
+                Matrix matrix = new Matrix();
+//                matrix.postRotate(value);
+
+                Bitmap rotate = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                if (rotate != bitmap) bitmap.recycle();
+
+                getCropKit().setImageBitmapResetBase(rotate, true);
             }
-        }, 2000);
+        }, 10);
     }
 
     private class OnClickListenerImpl implements View.OnClickListener

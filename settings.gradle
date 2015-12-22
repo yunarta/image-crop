@@ -3,3 +3,6 @@ project(':sample').projectDir = new File('sample')
 
 include ':works-cropkit'
 project(':works-cropkit').projectDir = new File('library')
+
+//include ':bolts-tasks'
+//project(':bolts-tasks').projectDir = new File('Bolts-Android/bolts-tasks')

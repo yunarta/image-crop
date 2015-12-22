@@ -6,6 +6,7 @@ import android.graphics.*;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.media.FaceDetector;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
@@ -62,9 +63,13 @@ public class CropImageView extends ImageViewTouchBase
 
     private Rect mUserRect;
 
+    private Handler mHandler;
+
     public CropImageView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
+
+        mHandler = new Handler();
 
         // load layer list for HighlightView
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CropImageView, R.attr.cropKitStyle, R.style.CropKit);
@@ -226,7 +231,7 @@ public class CropImageView extends ImageViewTouchBase
 //                    mFaceDetectionTask = new TaskCompletionSource<Void>();
                     return null;
                 }
-            }, new CropKitExecutors(getHandler())).continueWith(new Continuation<Object, Object>()
+            }, new CropKitExecutors(mHandler)).continueWith(new Continuation<Object, Object>()
             {
                 @Override
                 public Object then(Task<Object> task) throws Exception
@@ -409,7 +414,6 @@ public class CropImageView extends ImageViewTouchBase
                 {
                     recomputeFocus(event);
                 }
-
                 else if (mMotionHighlightView != null)
                 {
                     mMotionHighlightView.handleMotion(mMotionEdge, event.getX() - mLastX, event.getY() - mLastY);
@@ -691,8 +695,8 @@ public class CropImageView extends ImageViewTouchBase
 
             Bitmap faceBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             Bitmap b565       = faceBitmap.copy(Bitmap.Config.RGB_565, true);
+            if (b565 != faceBitmap) faceBitmap.recycle();
 
-            faceBitmap.recycle();
             return new Pair<>(b565, scale);
         }
 
