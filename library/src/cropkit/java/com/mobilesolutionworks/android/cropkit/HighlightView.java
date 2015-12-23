@@ -49,9 +49,13 @@ public class HighlightView
 
     private int mInset;
 
+    private final int mWidthCap;
+
     public HighlightView(View ctx, LayerDrawable metaData)
     {
         mContext = ctx;
+        mWidthCap = mContext.getResources().getDimensionPixelSize(R.dimen.cropkit_25dp);
+
         this.metaData = metaData;
     }
 
@@ -370,7 +374,7 @@ public class HighlightView
         r.inset(-dx, -dy);
 
         // Don't let the cropping rectangle shrink too fast.
-        final float widthCap = 25F;
+        final float widthCap = mWidthCap;
         if (r.width() < widthCap)
         {
             r.inset(-(widthCap - r.width()) / 2F, 0F);

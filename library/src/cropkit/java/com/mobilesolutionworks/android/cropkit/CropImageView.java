@@ -267,7 +267,7 @@ public class CropImageView extends ImageViewTouchBase
     @Override
     protected void zoomTo(float scale, float centerX, float centerY)
     {
-        Log.d("/!", "zoomTo");
+        Log.d("/!", "zoomTo " + scale);
         super.zoomTo(scale, centerX, centerY);
         for (HighlightView hv : mHighlightViews)
         {
