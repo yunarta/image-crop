@@ -20,8 +20,6 @@ android {
         main {
             java.srcDirs += ['src/cropkit/java']
             res.srcDirs += ['src/cropkit/res']
-
-            compileClasspath += configurations.provided
         }
     }
 
@@ -33,6 +31,7 @@ android {
 
 configurations {
     provided
+//    compile.extendsFrom provided
 }
 
 dependencies {
