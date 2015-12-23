@@ -162,7 +162,7 @@ public class CropKitFragment extends Fragment
 
             // If we are circle cropping, we want alpha channel, which is the
             // third param here.
-            croppedImage = Bitmap.createBitmap(width, height, mCircleCrop ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565);
+            croppedImage = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
             Canvas canvas = new Canvas(croppedImage);
 
