@@ -49,7 +49,7 @@ dependencies {
 worksPublish {
     bintray {
         repo = 'maven'
-        name = group + ':codex'
+        name = group + ':works-cropkit'
     }
 
     developer {
