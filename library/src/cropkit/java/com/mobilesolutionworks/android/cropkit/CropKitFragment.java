@@ -1,21 +1,18 @@
 package com.mobilesolutionworks.android.cropkit;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.RectF;
+import android.graphics.*;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.mobilesolutionworks.android.cropimage.R;
+import com.mobilesolutionworks.android.graphics.exif.ExifInterface;
+
+import java.io.IOException;
 
 /**
  * Created by yunarta on 8/12/15.
@@ -25,6 +22,10 @@ public class CropKitFragment extends Fragment
     private CropImageView mCropKit;
 
     private boolean mCircleCrop;
+
+    private int mRotation;
+
+    private Rect mScaleBitmapRect;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
@@ -51,6 +52,8 @@ public class CropKitFragment extends Fragment
 
         Bundle args = getArguments();
 
+        mRotation = args.getInt("rotation", 0);
+
         mCropKit.setAspect(args.getInt("aspectX", 1), args.getInt("aspectY", 1));
         mCropKit.setCircleCrop(args.getBoolean("circleCrop", false));
         mCropKit.setFaceDetection(args.getBoolean("faceDetection", false));
@@ -59,6 +62,59 @@ public class CropKitFragment extends Fragment
     public CropImageView getCropKit()
     {
         return mCropKit;
+    }
+
+    public void setImageBitmap(String path)
+    {
+        try
+        {
+            ExifInterface exif = new ExifInterface();
+            exif.readExif(path);
+
+            Integer orientation = exif.getTagIntValue(ExifInterface.TAG_ORIENTATION);
+            int rotation = ExifInterface.getRotationForOrientationValue(
+                    orientation != null ? (short) orientation.intValue() : ExifInterface.Orientation.TOP_LEFT
+            );
+
+            DisplayMetrics metrics         = getResources().getDisplayMetrics();
+            int            maxScreenLength = Math.max(metrics.widthPixels, metrics.heightPixels);
+
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inJustDecodeBounds = true;
+
+            BitmapFactory.decodeFile(path, opts);
+            int maxLength = Math.max(opts.outWidth, opts.outHeight);
+
+            opts.inSampleSize = maxLength / maxScreenLength * 2;
+            opts.inJustDecodeBounds = false;
+
+            Bitmap bitmap = BitmapFactory.decodeFile(path, opts);
+
+            Matrix matrix = new Matrix();
+            matrix.postRotate(rotation);
+            matrix.postRotate(mRotation);
+
+            Bitmap rotate = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            if (rotate != bitmap) bitmap.recycle();
+
+            mScaleBitmapRect = new Rect(0, 0, rotate.getWidth(), rotate.getHeight());
+
+            getCropKit().setImageBitmapResetBase(rotate, true);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public Rect getSelectedCropArea()
+    {
+        return new Rect(getCropKit().getSelectedCropArea());
+    }
+
+    public Rect getScaleBitmapRect()
+    {
+        return new Rect(mScaleBitmapRect);
     }
 
     public Bitmap getCroppedBitmap()
