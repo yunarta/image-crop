@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="z_imagecrop_runningFaceDetection">Please wait\u2026</string>
-    <string name="z_imagecrop_wallpaper">Setting wallpaper, please wait\u2026</string>
-    <string name="z_imagecrop_savingImage">Saving picture\u2026</string>
-    <string name="z_imagecrop_multiface_crop_help">Tap a face to begin.</string>
-</resources>
