@@ -105,7 +105,7 @@ public class CropKitUtil
         matrix.setRotate(orientationRotation);
         matrix.postRotate(cropInfo.rotation);
 
-        if (scaleDown < 0 || !scaleDownOnly)
+        if (scaleDown < 1 || !scaleDownOnly)
         {
             matrix.postScale(scaleDown, scaleDown);
         }
