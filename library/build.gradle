@@ -4,7 +4,7 @@ apply plugin: 'com.mobilesolutionworks.jenkins-configure'
 apply plugin: 'com.mobilesolutionworks.bintray-publish'
 
 group 'com.mobilesolutionworks'
-version jenkins.version('1.0.0')
+version jenkins.version('1.0.1')
 
 android {
     compileSdkVersion autoConfig.sdk(23)
