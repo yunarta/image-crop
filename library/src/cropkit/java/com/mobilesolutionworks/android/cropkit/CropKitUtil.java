@@ -24,7 +24,7 @@ public class CropKitUtil
 
         /**
          * Rectangle of the full bitmap size in scaled mode.
-         * <p/>
+         * <p>
          * If not null, mean crop rect is a scaled rect
          */
         public RectF scaledRect;
@@ -65,6 +65,16 @@ public class CropKitUtil
         // back to match the original bitmap dimension and orientation + rotation
         RectF scaledRect = new RectF(cropInfo.scaledRect);
         RectF cropRect   = new RectF(cropInfo.cropRect);
+
+        if (scaledRect.width() == 0 || scaledRect.height() == 0)
+        {
+            scaledRect.set(0, 0, opts.outWidth, opts.outHeight);
+        }
+
+        if (cropRect.width() == 0 || cropRect.height() == 0)
+        {
+            cropRect.set(0, 0, opts.outWidth, opts.outHeight);
+        }
 
         // inverse transform orientation and rotation
         matrix.setTranslate(-scaledRect.width() / 2, -scaledRect.height() / 2);
