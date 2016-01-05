@@ -25,6 +25,10 @@ android {
         }
     }
 
+    lintOptions {
+        disable 'IconMissingDensityFolder'
+    }
+
     buildTypes {
         release {
         }
