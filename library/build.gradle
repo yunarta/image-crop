@@ -1,10 +1,10 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.mobilesolutionworks.android-autoconfig'
-apply plugin: 'com.mobilesolutionworks.jenkins-configure'
-apply plugin: 'com.mobilesolutionworks.bintray-publish'
+//apply plugin: 'com.mobilesolutionworks.jenkins-configure'
+//apply plugin: 'com.mobilesolutionworks.bintray-publish'
 
 group 'com.mobilesolutionworks'
-version jenkins.version('1.0.4')
+//version jenkins.version('1.0.4')
 
 android {
     compileSdkVersion autoConfig.sdk(23)
@@ -50,18 +50,18 @@ dependencies {
     compile 'it.sephiroth.android.library.imagezoom:imagezoom:1.0.5'
 }
 
-worksPublish {
-    bintray {
-        repo = 'maven'
-        name = group + ':works-cropkit'
-    }
-
-    developer {
-        id = 'yunarta'
-        name = 'Yunarta Kartawahyudi'
-        email = 'yunarta.kartawahyudi@gmail.com'
-    }
-
-    siteUrl = 'https://github.com/yunarta/works-codex-android'
-    gitUrl = 'https://github.com/yunarta/works-codex-android.git'
-}
+//worksPublish {
+//    bintray {
+//        repo = 'maven'
+//        name = group + ':works-cropkit'
+//    }
+//
+//    developer {
+//        id = 'yunarta'
+//        name = 'Yunarta Kartawahyudi'
+//        email = 'yunarta.kartawahyudi@gmail.com'
+//    }
+//
+//    siteUrl = 'https://github.com/yunarta/works-codex-android'
+//    gitUrl = 'https://github.com/yunarta/works-codex-android.git'
+//}
