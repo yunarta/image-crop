@@ -7,12 +7,12 @@ group 'com.mobilesolutionworks'
 //version jenkins.version('1.0.4')
 
 android {
-    compileSdkVersion autoConfig.sdk(23)
-    buildToolsVersion autoConfig.buildTools('23.0.2')
+    compileSdkVersion 23
+    buildToolsVersion '23.0.3'
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion autoConfig.sdk(23)
+        targetSdkVersion 23
 
         versionCode 1
         versionName version
@@ -42,7 +42,7 @@ configurations {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    provided 'com.android.support:support-v4:' + autoConfig.support('23.1.1')
+    provided 'com.android.support:support-v4:23.3.0'
     provided 'com.parse.bolts:bolts-tasks:1.4.0'
 
     compile 'com.mobilesolutionworks:works-exif:1.0.0'
