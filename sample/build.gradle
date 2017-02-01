@@ -1,15 +1,13 @@
 apply plugin: 'com.android.application'
 
-apply from: ('https://raw.githubusercontent.com/yunarta/works-gradle-script/master/auto-configure.gradle')
-
 android {
-    compileSdkVersion autoCompileSdkVersion(23)
-    buildToolsVersion autoBuildToolsVersion('23.0.2')
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
         applicationId "com.mobilesolutionworks.android.cropkit.sample"
         minSdkVersion 14
-        targetSdkVersion autoCompileSdkVersion(23)
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
     }

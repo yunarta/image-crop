@@ -1,4 +1,10 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+ext {
+    compileSdkVersion = 25
+    buildToolsVersion = "25.0.2"
+    targetSdkVersion = 23
+    supportLibVersion = "25.1.1"
+}
 
 buildscript {
     repositories {
@@ -12,7 +18,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0'
+        classpath 'com.android.tools.build:gradle:2.3.0-beta3'
         classpath 'com.mobilesolutionworks:works-bintray-publish:+'
         classpath 'com.mobilesolutionworks:works-jenkins-android-builder:+'
         classpath 'com.mobilesolutionworks:works-autoconfig:1+'

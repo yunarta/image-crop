@@ -7,12 +7,12 @@ group 'com.mobilesolutionworks'
 //version jenkins.version('1.0.4')
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.3'
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 23
+        targetSdkVersion rootProject.ext.targetSdkVersion
 
         versionCode 1
         versionName version
